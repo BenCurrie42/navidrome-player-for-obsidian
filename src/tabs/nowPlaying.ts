@@ -1,4 +1,4 @@
-import { setIcon } from "obsidian";
+import { Notice, setIcon } from "obsidian";
 import { Player } from "../player";
 import { SubsonicClient } from "../subsonic";
 
@@ -90,7 +90,28 @@ export class NowPlayingTab {
 		this.shuffleBtn = controls.createEl("button", { cls: "navidrome-btn navidrome-btn-sm" });
 		setIcon(this.shuffleBtn, "shuffle");
 		this.shuffleBtn.setAttr("aria-label", "Shuffle queue");
-		this.shuffleBtn.onclick = () => this.player.shuffle();
+		this.shuffleBtn.onclick = () => {
+			this.player.shuffle();
+			new Notice("Queue shuffled");
+
+			// Flash the accent colour briefly.
+			this.shuffleBtn.addClass("is-flash");
+			window.setTimeout(() => this.shuffleBtn.removeClass("is-flash"), 600);
+
+			// Spin animation — remove first to re-trigger on rapid clicks.
+			this.shuffleBtn.removeClass("is-shuffling");
+			void this.shuffleBtn.offsetWidth; // force reflow
+			this.shuffleBtn.addClass("is-shuffling");
+			const onEnd = () => {
+				this.shuffleBtn.removeClass("is-shuffling");
+				this.shuffleBtn.removeEventListener("animationend", onEnd);
+			};
+			this.shuffleBtn.addEventListener("animationend", onEnd);
+			window.setTimeout(() => {
+				this.shuffleBtn.removeClass("is-shuffling");
+				this.shuffleBtn.removeEventListener("animationend", onEnd);
+			}, 700);
+		};
 
 		this.randomBtn = controls.createEl("button", { cls: "navidrome-btn navidrome-btn-sm" });
 		setIcon(this.randomBtn, "dice-5");
@@ -133,6 +154,7 @@ export class NowPlayingTab {
 		a.addEventListener("durationchange", onDuration);
 		a.addEventListener("play", () => this.updateSpin());
 		a.addEventListener("pause", () => this.updateSpin());
+		a.addEventListener("playing", () => this.updateSpin());
 	}
 
 	private updateSpin() {

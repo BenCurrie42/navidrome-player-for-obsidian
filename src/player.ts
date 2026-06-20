@@ -38,6 +38,8 @@ export class Player {
 		this.audio.addEventListener("ended", () => this.handleEnded());
 		this.audio.addEventListener("play", () => this.emitAndSchedule());
 		this.audio.addEventListener("pause", () => this.emitAndSchedule());
+		this.audio.addEventListener("playing", () => this.emit());
+		this.audio.addEventListener("waiting", () => this.emit());
 		this.audio.addEventListener("error", () => {
 			if (this.current) {
 				this.onError(`Playback failed for "${this.current.title}".`);
@@ -70,7 +72,7 @@ export class Player {
 	}
 
 	get isPlaying(): boolean {
-		return !this.audio.paused && !this.audio.ended && this.audio.readyState > 0;
+		return !this.audio.paused && !this.audio.ended;
 	}
 
 	get volume(): number {
