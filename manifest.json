@@ -1,7 +1,7 @@
 {
   "id": "navidrome-player",
   "name": "Navidrome Player",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minAppVersion": "1.4.0",
   "description": "Dock a music player in the sidebar that streams your Navidrome (Subsonic) library at full quality without leaving your vault.",
   "author": "Ben",
