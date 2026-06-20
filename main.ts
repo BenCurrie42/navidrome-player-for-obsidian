@@ -101,6 +101,16 @@ export default class NavidromePlugin extends Plugin {
 
 	// --- view --------------------------------------------------------------
 
+	/** Re-render the Now Playing tab in any open view (called after coverStyle changes). */
+	refreshNowPlaying(): void {
+		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_NAVIDROME);
+		for (const leaf of leaves) {
+			if (leaf.view instanceof NavidromeView) {
+				leaf.view.rebuildNowPlaying();
+			}
+		}
+	}
+
 	async activateView() {
 		const { workspace } = this.app;
 		let leaf: WorkspaceLeaf | null =

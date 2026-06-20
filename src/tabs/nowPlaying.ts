@@ -1,6 +1,7 @@
 import { Notice, setIcon } from "obsidian";
 import { Player } from "../player";
 import { SubsonicClient } from "../subsonic";
+import type { NavidromeSettings } from "../types";
 
 function fmtTime(seconds: number): string {
 	if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -29,12 +30,21 @@ export class NowPlayingTab {
 	constructor(
 		private root: HTMLElement,
 		private player: Player,
-		private getClient: () => SubsonicClient | null
+		private getClient: () => SubsonicClient | null,
+		private getSettings: () => NavidromeSettings
 	) {
 		this.build();
 		this.bindAudio();
 		this.player.onChange(() => this.render());
 		this.render();
+	}
+
+	private applyStyleClass() {
+		const style = this.getSettings().coverStyle;
+		this.disc.toggleClass("is-vinyl", style === "vinyl");
+		this.disc.toggleClass("is-square", style === "square");
+		this.discFallback.toggleClass("is-vinyl", style === "vinyl");
+		this.discFallback.toggleClass("is-square", style === "square");
 	}
 
 	private build() {
@@ -158,11 +168,15 @@ export class NowPlayingTab {
 	}
 
 	private updateSpin() {
-		this.disc.toggleClass("spinning", this.player.isPlaying);
+		const isSquare = this.getSettings().coverStyle === "square";
+		this.disc.toggleClass("spinning", !isSquare && this.player.isPlaying);
 	}
 
 	render() {
 		const track = this.player.current;
+
+		// Apply cover style classes.
+		this.applyStyleClass();
 
 		// Cover art.
 		const client = this.getClient();

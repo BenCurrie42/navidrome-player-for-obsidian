@@ -43,16 +43,20 @@ export type PlaybackMode = "normal" | "random";
 
 export type TabId = "library" | "nowPlaying";
 
+export type CoverStyle = "vinyl" | "square";
+
 export interface NavidromeSettings {
 	serverUrl: string;
 	username: string;
 	password: string;
+	coverStyle: CoverStyle;
 }
 
 export const DEFAULT_SETTINGS: NavidromeSettings = {
 	serverUrl: "",
 	username: "",
 	password: "",
+	coverStyle: "vinyl",
 };
 
 /** Everything we persist via saveData(), in one blob alongside settings. */
