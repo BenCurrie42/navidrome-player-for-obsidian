@@ -6,3 +6,17 @@ main.js
 # obsidian / os
 .DS_Store
 data.json
+
+# claude / agent tooling
+.claude/
+.mcp.json
+CLAUDE.md
+CLAUDE.local.md
+
+# private / secrets
+.env
+.env.*
+*.local
+secrets.json
+*.pem
+*.key
