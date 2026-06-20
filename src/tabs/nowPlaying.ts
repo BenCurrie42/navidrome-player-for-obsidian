@@ -1,6 +1,7 @@
 import { Notice, setIcon } from "obsidian";
 import { Player } from "../player";
 import { SubsonicClient } from "../subsonic";
+import { NavidromeSettings } from "../types";
 
 function fmtTime(seconds: number): string {
 	if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -13,6 +14,7 @@ function fmtTime(seconds: number): string {
 export class NowPlayingTab {
 	private disc!: HTMLImageElement;
 	private discFallback!: HTMLElement;
+	private tonearm!: HTMLElement;
 	private titleEl!: HTMLElement;
 	private artistEl!: HTMLElement;
 	private albumEl!: HTMLElement;
@@ -29,7 +31,8 @@ export class NowPlayingTab {
 	constructor(
 		private root: HTMLElement,
 		private player: Player,
-		private getClient: () => SubsonicClient | null
+		private getClient: () => SubsonicClient | null,
+		private getSettings: () => NavidromeSettings
 	) {
 		this.build();
 		this.bindAudio();
@@ -46,6 +49,12 @@ export class NowPlayingTab {
 		this.disc.style.display = "none";
 		this.discFallback = coverWrap.createDiv({ cls: "navidrome-disc navidrome-disc-fallback" });
 		setIcon(this.discFallback, "music");
+		this.tonearm = coverWrap.createDiv({ cls: "navidrome-tonearm" });
+		this.tonearm.innerHTML = `<svg viewBox="0 0 40 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+			<line x1="20" y1="10" x2="20" y2="100" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+			<circle cx="20" cy="8" r="6" fill="currentColor"/>
+			<circle cx="20" cy="102" r="5" fill="none" stroke="currentColor" stroke-width="2.5"/>
+		</svg>`;
 
 		const info = this.root.createDiv({ cls: "navidrome-trackinfo" });
 		this.titleEl = info.createDiv({ cls: "navidrome-title", text: "Nothing playing" });
@@ -159,6 +168,13 @@ export class NowPlayingTab {
 
 	private updateSpin() {
 		this.disc.toggleClass("spinning", this.player.isPlaying);
+		this.tonearm.toggleClass("is-on", this.player.isPlaying);
+	}
+
+	/** Called by the settings tab after toggling showTonearm so the arm appears/disappears live. */
+	refreshTonearm() {
+		this.tonearm.style.display = this.getSettings().showTonearm ? "" : "none";
+		this.updateSpin();
 	}
 
 	render() {
@@ -174,7 +190,7 @@ export class NowPlayingTab {
 			this.disc.style.display = "none";
 			this.discFallback.style.display = "";
 		}
-		this.updateSpin();
+		this.refreshTonearm();
 
 		// Metadata.
 		this.titleEl.setText(track?.title ?? "Nothing playing");

@@ -15,6 +15,7 @@ export class NavidromeView extends ItemView {
 	private libraryEl!: HTMLElement;
 	private nowPlayingEl!: HTMLElement;
 	private libraryTab!: LibraryTab;
+	nowPlayingTab!: NowPlayingTab;
 	private segButtons: Record<TabId, HTMLButtonElement> = {} as never;
 
 	constructor(leaf: WorkspaceLeaf, private plugin: NavidromePlugin) {
@@ -52,10 +53,11 @@ export class NavidromeView extends ItemView {
 		this.nowPlayingEl = container.createDiv({ cls: "navidrome-tabbody" });
 		this.libraryEl = container.createDiv({ cls: "navidrome-tabbody" });
 
-		new NowPlayingTab(
+		this.nowPlayingTab = new NowPlayingTab(
 			this.nowPlayingEl,
 			this.plugin.player,
-			() => this.plugin.getClient()
+			() => this.plugin.getClient(),
+			() => this.plugin.settings
 		);
 		this.libraryTab = new LibraryTab(
 			this.libraryEl,

@@ -1,6 +1,7 @@
 import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import type NavidromePlugin from "../main";
 import { SubsonicClient, SubsonicError } from "./subsonic";
+import { NavidromeView, VIEW_TYPE_NAVIDROME } from "./view";
 
 export class NavidromeSettingTab extends PluginSettingTab {
 	constructor(app: App, private plugin: NavidromePlugin) {
@@ -49,6 +50,28 @@ export class NavidromeSettingTab extends PluginSettingTab {
 					});
 				text.inputEl.type = "password";
 			});
+
+		new Setting(containerEl)
+			.setName("Show vinyl tonearm")
+			.setDesc(
+				"Overlay a tonearm on the spinning disc. The arm swings onto the record while playing and back off when paused."
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.showTonearm)
+					.onChange(async (value) => {
+						this.plugin.settings.showTonearm = value;
+						await this.plugin.saveSettings();
+						// Notify any open player view so it updates live.
+						for (const leaf of this.plugin.app.workspace.getLeavesOfType(
+							VIEW_TYPE_NAVIDROME
+						)) {
+							if (leaf.view instanceof NavidromeView) {
+								leaf.view.nowPlayingTab?.refreshTonearm();
+							}
+						}
+					})
+			);
 
 		new Setting(containerEl)
 			.setName("Test connection")

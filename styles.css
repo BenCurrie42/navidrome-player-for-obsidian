@@ -57,6 +57,7 @@
 	display: flex;
 	justify-content: center;
 	padding: 12px 0;
+	position: relative;
 }
 
 @keyframes navidrome-spin {
@@ -89,6 +90,36 @@
 .navidrome-disc-fallback svg {
 	width: 40%;
 	height: 40%;
+}
+
+/* Vinyl tonearm — hidden by default; shown when showTonearm setting is on. */
+.navidrome-tonearm {
+	display: none; /* toggled inline by JS */
+	position: absolute;
+	/* Pivot in the upper-right corner of the cover-wrap */
+	top: 0;
+	right: 6%;
+	width: 18%;
+	max-width: 68px;
+	color: var(--text-muted);
+	/* Transform origin at the top pivot circle */
+	transform-origin: 50% 7%;
+	/* Resting position: arm angled away from the disc (to the right) */
+	transform: rotate(28deg);
+	transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+	pointer-events: none;
+	z-index: 1;
+}
+
+.navidrome-tonearm svg {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* Engaged position: arm swings left onto the disc */
+.navidrome-tonearm.is-on {
+	transform: rotate(0deg);
 }
 
 .navidrome-trackinfo {

@@ -47,12 +47,14 @@ export interface NavidromeSettings {
 	serverUrl: string;
 	username: string;
 	password: string;
+	showTonearm: boolean;
 }
 
 export const DEFAULT_SETTINGS: NavidromeSettings = {
 	serverUrl: "",
 	username: "",
 	password: "",
+	showTonearm: false,
 };
 
 /** Everything we persist via saveData(), in one blob alongside settings. */
