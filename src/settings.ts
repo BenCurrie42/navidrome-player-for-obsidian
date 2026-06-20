@@ -51,6 +51,21 @@ export class NavidromeSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName("Cover style")
+			.setDesc("How album art is displayed in Now Playing.")
+			.addDropdown((drop) =>
+				drop
+					.addOption("vinyl", "Vinyl")
+					.addOption("square", "Square")
+					.setValue(this.plugin.settings.coverStyle)
+					.onChange(async (value) => {
+						this.plugin.settings.coverStyle = value as "vinyl" | "square";
+						await this.plugin.saveSettings();
+						this.plugin.refreshNowPlaying();
+					})
+			);
+
+		new Setting(containerEl)
 			.setName("Test connection")
 			.setDesc("Ping the server with the current credentials.")
 			.addButton((btn) =>

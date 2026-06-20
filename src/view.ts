@@ -55,7 +55,8 @@ export class NavidromeView extends ItemView {
 		new NowPlayingTab(
 			this.nowPlayingEl,
 			this.plugin.player,
-			() => this.plugin.getClient()
+			() => this.plugin.getClient(),
+			() => this.plugin.settings
 		);
 		this.libraryTab = new LibraryTab(
 			this.libraryEl,
@@ -74,6 +75,16 @@ export class NavidromeView extends ItemView {
 		this.segButtons.library.toggleClass("is-active", id === "library");
 		if (id === "library") this.libraryTab.onShow();
 		void this.plugin.setActiveTab(id);
+	}
+
+	/** Re-build the Now Playing tab to pick up a settings change (e.g. coverStyle). */
+	rebuildNowPlaying(): void {
+		new NowPlayingTab(
+			this.nowPlayingEl,
+			this.plugin.player,
+			() => this.plugin.getClient(),
+			() => this.plugin.settings
+		);
 	}
 
 	async onClose(): Promise<void> {

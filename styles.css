@@ -78,6 +78,11 @@
 	animation-play-state: running;
 }
 
+.navidrome-disc.is-square {
+	border-radius: var(--radius-m);
+	animation: none;
+}
+
 .navidrome-disc-fallback {
 	display: flex;
 	align-items: center;
