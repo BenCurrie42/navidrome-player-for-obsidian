@@ -1,0 +1,389 @@
+/* Navidrome Player — uses Obsidian theme variables so it blends with the vault. */
+
+.navidrome-view {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 0;
+	overflow: hidden;
+}
+
+/* --- top tab bar --------------------------------------------------------- */
+
+.navidrome-tabbar {
+	display: flex;
+	gap: 4px;
+	padding: 8px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	flex: 0 0 auto;
+}
+
+.navidrome-tab {
+	flex: 1;
+	padding: 6px 8px;
+	border-radius: var(--radius-s);
+	background: var(--background-secondary);
+	color: var(--text-muted);
+	border: none;
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.navidrome-tab.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.navidrome-tabbody {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 12px;
+}
+
+/* --- now playing --------------------------------------------------------- */
+
+.navidrome-nowplaying {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+}
+
+.navidrome-cover-wrap {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	padding: 12px 0;
+}
+
+@keyframes navidrome-spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}
+
+.navidrome-disc {
+	width: 70%;
+	max-width: 220px;
+	aspect-ratio: 1 / 1;
+	object-fit: cover;
+	border-radius: 50%;
+	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+	animation: navidrome-spin 8s linear infinite;
+	animation-play-state: paused;
+}
+
+.navidrome-disc.spinning {
+	animation-play-state: running;
+}
+
+.navidrome-disc-fallback {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--background-secondary);
+	color: var(--text-faint);
+}
+
+.navidrome-disc-fallback svg {
+	width: 40%;
+	height: 40%;
+}
+
+.navidrome-trackinfo {
+	text-align: center;
+	width: 100%;
+}
+
+.navidrome-title {
+	font-weight: 600;
+	font-size: var(--font-ui-medium);
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.navidrome-artist,
+.navidrome-album {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* seek + transport */
+
+.navidrome-seekrow {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+}
+
+.navidrome-seek,
+.navidrome-volume {
+	flex: 1;
+	min-width: 0;
+}
+
+.navidrome-time {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	font-variant-numeric: tabular-nums;
+	min-width: 30px;
+	text-align: center;
+}
+
+.navidrome-transport {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 14px;
+}
+
+.navidrome-controls {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	width: 100%;
+}
+
+.navidrome-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: none;
+	color: var(--text-normal);
+	cursor: pointer;
+	padding: 6px;
+	border-radius: var(--radius-s);
+}
+
+.navidrome-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.navidrome-btn-play {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+}
+
+.navidrome-btn-play:hover {
+	background: var(--interactive-accent-hover);
+}
+
+.navidrome-btn-sm.is-active {
+	color: var(--interactive-accent);
+}
+
+.navidrome-volwrap {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex: 1;
+	min-width: 0;
+}
+
+.navidrome-volicon {
+	display: flex;
+	color: var(--text-muted);
+}
+
+/* up-next queue */
+
+.navidrome-queue-head {
+	width: 100%;
+	margin: 14px 0 4px;
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+}
+
+.navidrome-queue {
+	width: 100%;
+}
+
+.navidrome-queue-item {
+	display: flex;
+	flex-direction: column;
+	padding: 5px 6px;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+}
+
+.navidrome-queue-item:hover {
+	background: var(--background-modifier-hover);
+}
+
+.navidrome-queue-title {
+	font-size: var(--font-ui-small);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.navidrome-queue-artist {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.navidrome-queue-empty,
+.navidrome-empty,
+.navidrome-loading,
+.navidrome-error {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	padding: 8px 2px;
+}
+
+.navidrome-error {
+	color: var(--text-error);
+}
+
+/* --- library ------------------------------------------------------------- */
+
+.navidrome-subseg {
+	display: flex;
+	gap: 4px;
+	margin-bottom: 10px;
+}
+
+.navidrome-subseg-btn {
+	padding: 4px 8px;
+	background: var(--background-secondary);
+	border: none;
+	border-radius: var(--radius-s);
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: var(--font-ui-smaller);
+}
+
+.navidrome-subseg-btn.is-active {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.navidrome-refresh {
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+}
+
+.navidrome-album-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+	gap: 10px;
+}
+
+.navidrome-album-card {
+	cursor: pointer;
+	border-radius: var(--radius-s);
+	padding: 4px;
+}
+
+.navidrome-album-card:hover {
+	background: var(--background-modifier-hover);
+}
+
+.navidrome-album-art {
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	border-radius: var(--radius-s);
+	overflow: hidden;
+	background: var(--background-secondary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-faint);
+}
+
+.navidrome-album-art img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.navidrome-album-name {
+	font-size: var(--font-ui-smaller);
+	margin-top: 4px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.navidrome-album-artist {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* artists */
+
+.navidrome-artist-header {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 6px 4px;
+	cursor: pointer;
+	border-radius: var(--radius-s);
+}
+
+.navidrome-artist-header:hover {
+	background: var(--background-modifier-hover);
+}
+
+.navidrome-chevron {
+	display: flex;
+	color: var(--text-muted);
+}
+
+.navidrome-artist-name {
+	font-size: var(--font-ui-small);
+}
+
+.navidrome-artist-albums {
+	padding: 6px 0 10px 18px;
+}
+
+/* playlists */
+
+.navidrome-playlist-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 6px;
+	cursor: pointer;
+	border-radius: var(--radius-s);
+}
+
+.navidrome-playlist-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.navidrome-playlist-icon {
+	display: flex;
+	color: var(--text-muted);
+}
+
+.navidrome-playlist-meta {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.navidrome-playlist-name {
+	font-size: var(--font-ui-small);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.navidrome-playlist-count {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}

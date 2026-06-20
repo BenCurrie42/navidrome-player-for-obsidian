@@ -1,0 +1,8 @@
+# build / deps
+node_modules/
+main.js
+*.js.map
+
+# obsidian / os
+.DS_Store
+data.json
