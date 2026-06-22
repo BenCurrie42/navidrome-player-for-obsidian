@@ -1,5 +1,6 @@
 import { Notice, setIcon } from "obsidian";
 import { Player } from "../player";
+import { RadioMetadataPoller } from "../radioMetadata";
 import { SubsonicClient } from "../subsonic";
 import type { NavidromeSettings } from "../types";
 
@@ -14,6 +15,7 @@ function fmtTime(seconds: number): string {
 export class NowPlayingTab {
 	private disc!: HTMLImageElement;
 	private discFallback!: HTMLElement;
+	private waveCanvas!: HTMLCanvasElement;
 	private titleEl!: HTMLElement;
 	private artistEl!: HTMLElement;
 	private albumEl!: HTMLElement;
@@ -31,6 +33,15 @@ export class NowPlayingTab {
 	private queueList!: HTMLElement;
 	private seeking = false;
 
+	// Radio "now playing" detection + waveform animation state.
+	private radioMeta: RadioMetadataPoller | null = null;
+	private radioUrl: string | null = null;
+	private radioNowPlaying: string | null = null;
+	private waveRaf: number | null = null;
+	private wavePhase = 0;
+	private accent = "";
+	private unsubscribe: () => void;
+
 	constructor(
 		private root: HTMLElement,
 		private player: Player,
@@ -39,8 +50,15 @@ export class NowPlayingTab {
 	) {
 		this.build();
 		this.bindAudio();
-		this.player.onChange(() => this.render());
+		this.unsubscribe = this.player.onChange(() => this.render());
 		this.render();
+	}
+
+	/** Stop pollers/animations and detach listeners (called before rebuild/close). */
+	destroy() {
+		this.unsubscribe();
+		this.stopRadioMeta();
+		this.stopWave();
 	}
 
 	private applyStyleClass() {
@@ -60,6 +78,10 @@ export class NowPlayingTab {
 		this.disc.style.display = "none";
 		this.discFallback = coverWrap.createDiv({ cls: "navidrome-disc navidrome-disc-fallback" });
 		setIcon(this.discFallback, "music");
+
+		// Live waveform visualiser, shown in place of the cover for radio.
+		this.waveCanvas = coverWrap.createEl("canvas", { cls: "navidrome-waveform" });
+		this.waveCanvas.style.display = "none";
 
 		const info = this.root.createDiv({ cls: "navidrome-trackinfo" });
 		this.titleEl = info.createDiv({ cls: "navidrome-title", text: "Nothing playing" });
@@ -178,34 +200,165 @@ export class NowPlayingTab {
 		this.disc.toggleClass("spinning", !isSquare && this.player.isPlaying);
 	}
 
+	// --- radio "now playing" detection -------------------------------------
+
+	/** (Re)start ICY metadata polling for a station, or stop if url is null. */
+	private startRadioMeta(url: string | null) {
+		if (url === this.radioUrl) return; // already polling this station
+		this.stopRadioMeta();
+		if (!url) return;
+		this.radioUrl = url;
+		this.radioMeta = new RadioMetadataPoller(url, (title) => {
+			this.radioNowPlaying = title;
+			this.render();
+		});
+		this.radioMeta.start();
+	}
+
+	private stopRadioMeta() {
+		this.radioMeta?.stop();
+		this.radioMeta = null;
+		this.radioUrl = null;
+		this.radioNowPlaying = null;
+	}
+
+	// --- waveform visualiser -----------------------------------------------
+
+	/** Animate the waveform while a radio stream is playing; rest when paused. */
+	private updateWave() {
+		if (this.player.isPlaying) this.startWave();
+		else {
+			this.stopWave();
+			this.drawWave(); // one static (low) frame
+		}
+	}
+
+	private startWave() {
+		if (this.waveRaf !== null) return;
+		const step = () => {
+			this.wavePhase += 0.06;
+			this.drawWave();
+			this.waveRaf = window.requestAnimationFrame(step);
+		};
+		this.waveRaf = window.requestAnimationFrame(step);
+	}
+
+	private stopWave() {
+		if (this.waveRaf !== null) {
+			window.cancelAnimationFrame(this.waveRaf);
+			this.waveRaf = null;
+		}
+	}
+
+	private drawWave() {
+		const canvas = this.waveCanvas;
+		if (canvas.style.display === "none") return;
+		const dpr = window.devicePixelRatio || 1;
+		const w = canvas.clientWidth || 300;
+		const h = canvas.clientHeight || 160;
+		if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+			canvas.width = Math.round(w * dpr);
+			canvas.height = Math.round(h * dpr);
+		}
+		const ctx = canvas.getContext("2d");
+		if (!ctx) return;
+		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+		ctx.clearRect(0, 0, w, h);
+
+		if (!this.accent) {
+			this.accent =
+				getComputedStyle(document.body)
+					.getPropertyValue("--interactive-accent")
+					.trim() || "#7c6cff";
+		}
+		ctx.fillStyle = this.accent;
+
+		const playing = this.player.isPlaying;
+		const bars = 40;
+		const gap = 3;
+		const barW = Math.max(2, (w - gap * (bars - 1)) / bars);
+		const mid = h / 2;
+		const maxAmp = playing ? h * 0.44 : h * 0.03;
+		for (let i = 0; i < bars; i++) {
+			// Two out-of-phase sines per bar give an organic, non-repetitive look.
+			const n = playing
+				? 0.25 +
+				  0.75 *
+						Math.abs(
+							Math.sin(this.wavePhase * 1.3 + i * 0.5) *
+								Math.sin(this.wavePhase * 0.7 + i * 0.27)
+						)
+				: 1;
+			const bh = Math.max(2, maxAmp * n);
+			const x = i * (barW + gap);
+			const r = Math.min(barW / 2, 2);
+			this.roundRect(ctx, x, mid - bh / 2, barW, bh, r);
+		}
+	}
+
+	private roundRect(
+		ctx: CanvasRenderingContext2D,
+		x: number,
+		y: number,
+		w: number,
+		h: number,
+		r: number
+	) {
+		ctx.beginPath();
+		ctx.moveTo(x + r, y);
+		ctx.arcTo(x + w, y, x + w, y + h, r);
+		ctx.arcTo(x + w, y + h, x, y + h, r);
+		ctx.arcTo(x, y + h, x, y, r);
+		ctx.arcTo(x, y, x + w, y, r);
+		ctx.closePath();
+		ctx.fill();
+	}
+
 	render() {
 		const track = this.player.current;
+		const isRadio = track?.isRadio ?? false;
 
 		// Apply cover style classes.
 		this.applyStyleClass();
 
-		// Cover art.
 		const client = this.getClient();
-		if (track?.coverArt && client) {
-			this.disc.src = client.coverArtUrl(track.coverArt);
-			this.disc.style.display = "";
-			this.discFallback.style.display = "none";
-		} else {
+		if (isRadio) {
+			// Radio: a live waveform stands in for the (absent) cover art.
 			this.disc.style.display = "none";
-			this.discFallback.style.display = "";
+			this.discFallback.style.display = "none";
+			this.waveCanvas.style.display = "";
+			this.startRadioMeta(track?.streamUrl ?? null);
+			this.updateWave();
+		} else {
+			this.waveCanvas.style.display = "none";
+			this.stopRadioMeta();
+			this.stopWave();
+			// Cover art.
+			if (track?.coverArt && client) {
+				this.disc.src = client.coverArtUrl(track.coverArt);
+				this.disc.style.display = "";
+				this.discFallback.style.display = "none";
+			} else {
+				this.disc.style.display = "none";
+				this.discFallback.style.display = "";
+			}
+			this.updateSpin();
 		}
-		this.updateSpin();
-
-		const isRadio = track?.isRadio ?? false;
 
 		// Seek bar: hidden for radio (no meaningful duration).
 		this.seekRow.style.display = isRadio ? "none" : "";
 
-		// Metadata.
+		// Metadata. For radio the station name is the title and the detected
+		// "now playing" song (best effort) takes the artist line.
 		this.titleEl.setText(track?.title ?? "Nothing playing");
 		this.liveBadge.style.display = isRadio ? "" : "none";
-		this.artistEl.setText(isRadio ? "" : (track?.artist ?? ""));
-		this.albumEl.setText(isRadio ? "" : (track?.album ?? ""));
+		if (isRadio) {
+			this.artistEl.setText(this.radioNowPlaying ?? "");
+			this.albumEl.setText("");
+		} else {
+			this.artistEl.setText(track?.artist ?? "");
+			this.albumEl.setText(track?.album ?? "");
+		}
 
 		// Prev/next: hidden for radio (no queue to navigate).
 		this.prevBtn.style.display = isRadio ? "none" : "";

@@ -96,6 +96,11 @@
 	height: 40%;
 }
 
+.navidrome-waveform {
+	width: min(80%, 360px);
+	height: 160px;
+}
+
 .navidrome-trackinfo {
 	text-align: center;
 	width: 100%;

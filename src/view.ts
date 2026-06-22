@@ -15,6 +15,7 @@ export class NavidromeView extends ItemView {
 	private libraryEl!: HTMLElement;
 	private nowPlayingEl!: HTMLElement;
 	private libraryTab!: LibraryTab;
+	private nowPlayingTab!: NowPlayingTab;
 	private segButtons: Record<TabId, HTMLButtonElement> = {} as never;
 
 	constructor(leaf: WorkspaceLeaf, private plugin: NavidromePlugin) {
@@ -52,7 +53,7 @@ export class NavidromeView extends ItemView {
 		this.nowPlayingEl = container.createDiv({ cls: "navidrome-tabbody" });
 		this.libraryEl = container.createDiv({ cls: "navidrome-tabbody" });
 
-		new NowPlayingTab(
+		this.nowPlayingTab = new NowPlayingTab(
 			this.nowPlayingEl,
 			this.plugin.player,
 			() => this.plugin.getClient(),
@@ -79,7 +80,8 @@ export class NavidromeView extends ItemView {
 
 	/** Re-build the Now Playing tab to pick up a settings change (e.g. coverStyle). */
 	rebuildNowPlaying(): void {
-		new NowPlayingTab(
+		this.nowPlayingTab?.destroy();
+		this.nowPlayingTab = new NowPlayingTab(
 			this.nowPlayingEl,
 			this.plugin.player,
 			() => this.plugin.getClient(),
@@ -88,6 +90,8 @@ export class NavidromeView extends ItemView {
 	}
 
 	async onClose(): Promise<void> {
-		// The player lives on the plugin and keeps playing; nothing to tear down.
+		// The player lives on the plugin and keeps playing, but the view's
+		// pollers/animations and change subscription must be released.
+		this.nowPlayingTab?.destroy();
 	}
 }
