@@ -30,6 +30,7 @@ export class NowPlayingTab {
 	private curTime!: HTMLElement;
 	private durTime!: HTMLElement;
 	private volume!: HTMLInputElement;
+	private queueHead!: HTMLElement;
 	private queueList!: HTMLElement;
 	private seeking = false;
 
@@ -172,7 +173,10 @@ export class NowPlayingTab {
 		);
 
 		// Up-next queue.
-		this.root.createEl("h4", { cls: "navidrome-queue-head", text: "Up next" });
+		this.queueHead = this.root.createEl("h4", {
+			cls: "navidrome-queue-head",
+			text: "Up next",
+		});
 		this.queueList = this.root.createDiv({ cls: "navidrome-queue" });
 	}
 
@@ -317,21 +321,25 @@ export class NowPlayingTab {
 	render() {
 		const track = this.player.current;
 		const isRadio = track?.isRadio ?? false;
+		// Waveform stands in for the cover for radio (no art) and whenever the
+		// user picks the "waveform" cover style for regular music.
+		const showWave = isRadio || this.getSettings().coverStyle === "waveform";
 
 		// Apply cover style classes.
 		this.applyStyleClass();
 
+		// Radio metadata polling is independent of the visualiser.
+		if (isRadio) this.startRadioMeta(track?.streamUrl ?? null);
+		else this.stopRadioMeta();
+
 		const client = this.getClient();
-		if (isRadio) {
-			// Radio: a live waveform stands in for the (absent) cover art.
+		if (showWave) {
 			this.disc.style.display = "none";
 			this.discFallback.style.display = "none";
 			this.waveCanvas.style.display = "";
-			this.startRadioMeta(track?.streamUrl ?? null);
 			this.updateWave();
 		} else {
 			this.waveCanvas.style.display = "none";
-			this.stopRadioMeta();
 			this.stopWave();
 			// Cover art.
 			if (track?.coverArt && client) {
@@ -360,9 +368,11 @@ export class NowPlayingTab {
 			this.albumEl.setText(track?.album ?? "");
 		}
 
-		// Prev/next: hidden for radio (no queue to navigate).
+		// Prev/next, shuffle, and vibes are all queue concepts — hidden for radio.
 		this.prevBtn.style.display = isRadio ? "none" : "";
 		this.nextBtn.style.display = isRadio ? "none" : "";
+		this.shuffleBtn.style.display = isRadio ? "none" : "";
+		this.randomBtn.style.display = isRadio ? "none" : "";
 
 		// Play button glyph.
 		setIcon(this.playBtn, this.player.isPlaying ? "pause" : "play");
@@ -373,7 +383,10 @@ export class NowPlayingTab {
 		// Volume (in case it changed elsewhere).
 		this.volume.value = String(this.player.volume);
 
-		this.renderQueue();
+		// Up-next queue: meaningless for a single live stream.
+		this.queueHead.style.display = isRadio ? "none" : "";
+		this.queueList.style.display = isRadio ? "none" : "";
+		if (!isRadio) this.renderQueue();
 	}
 
 	private renderQueue() {

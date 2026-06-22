@@ -54,7 +54,7 @@ export type PlaybackMode = "normal" | "random";
 
 export type TabId = "library" | "nowPlaying";
 
-export type CoverStyle = "vinyl" | "square";
+export type CoverStyle = "vinyl" | "square" | "waveform";
 
 export interface NavidromeSettings {
 	serverUrl: string;

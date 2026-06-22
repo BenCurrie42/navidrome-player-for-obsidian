@@ -1,6 +1,7 @@
 import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import type NavidromePlugin from "../main";
 import { SubsonicClient, SubsonicError } from "./subsonic";
+import type { CoverStyle } from "./types";
 
 export class NavidromeSettingTab extends PluginSettingTab {
 	constructor(app: App, private plugin: NavidromePlugin) {
@@ -52,14 +53,17 @@ export class NavidromeSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Cover style")
-			.setDesc("How album art is displayed in Now Playing.")
+			.setDesc(
+				"How the cover is displayed in Now Playing: spinning vinyl, a static square, or a live waveform."
+			)
 			.addDropdown((drop) =>
 				drop
 					.addOption("vinyl", "Vinyl")
 					.addOption("square", "Square")
+					.addOption("waveform", "Waveform")
 					.setValue(this.plugin.settings.coverStyle)
 					.onChange(async (value) => {
-						this.plugin.settings.coverStyle = value as "vinyl" | "square";
+						this.plugin.settings.coverStyle = value as CoverStyle;
 						await this.plugin.saveSettings();
 						this.plugin.refreshNowPlaying();
 					})
