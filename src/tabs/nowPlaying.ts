@@ -41,6 +41,7 @@ export class NowPlayingTab {
 	private waveRaf: number | null = null;
 	private wavePhase = 0;
 	private accent = "";
+	private resizeObs: ResizeObserver | null = null;
 	private unsubscribe: () => void;
 
 	constructor(
@@ -60,6 +61,8 @@ export class NowPlayingTab {
 		this.unsubscribe();
 		this.stopRadioMeta();
 		this.stopWave();
+		this.resizeObs?.disconnect();
+		this.resizeObs = null;
 	}
 
 	private applyStyleClass() {
@@ -83,6 +86,13 @@ export class NowPlayingTab {
 		// Live waveform visualiser, shown in place of the cover for radio.
 		this.waveCanvas = coverWrap.createEl("canvas", { cls: "navidrome-waveform" });
 		this.waveCanvas.style.display = "none";
+
+		// Keep the waveform sharp and full-size as the pane resizes — the rAF
+		// loop only runs while playing, so paused/static frames need a redraw.
+		this.resizeObs = new ResizeObserver(() => {
+			if (this.waveRaf === null) this.drawWave();
+		});
+		this.resizeObs.observe(this.waveCanvas);
 
 		const info = this.root.createDiv({ cls: "navidrome-trackinfo" });
 		this.titleEl = info.createDiv({ cls: "navidrome-title", text: "Nothing playing" });
@@ -278,8 +288,9 @@ export class NowPlayingTab {
 		ctx.fillStyle = this.accent;
 
 		const playing = this.player.isPlaying;
-		const bars = 40;
-		const gap = 3;
+		// Scale bar count with width so density stays consistent at any pane size.
+		const gap = Math.max(2, Math.round(w / 90));
+		const bars = Math.max(20, Math.min(64, Math.round(w / 9)));
 		const barW = Math.max(2, (w - gap * (bars - 1)) / bars);
 		const mid = h / 2;
 		const maxAmp = playing ? h * 0.44 : h * 0.03;

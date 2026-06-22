@@ -48,13 +48,22 @@
 	flex-direction: column;
 	align-items: center;
 	gap: 10px;
-	max-width: 460px;
+	width: 100%;
+	max-width: 600px;
 	margin: 0 auto;
+	/* Fill the pane the user gives us so the cover/waveform can scale up. */
+	min-height: 100%;
+	box-sizing: border-box;
 }
 
+/* The cover/waveform region absorbs all leftover vertical space; the media
+   inside scales to the largest square that fits, so it tracks pane size. */
 .navidrome-cover-wrap {
 	width: 100%;
+	flex: 1 1 auto;
+	min-height: 120px;
 	display: flex;
+	align-items: center;
 	justify-content: center;
 	padding: 12px 0;
 }
@@ -64,9 +73,16 @@
 	to { transform: rotate(360deg); }
 }
 
-.navidrome-disc {
-	width: min(80%, 360px);
+.navidrome-disc,
+.navidrome-waveform {
+	height: 100%;
+	width: auto;
+	max-width: 100%;
+	max-height: 100%;
 	aspect-ratio: 1 / 1;
+}
+
+.navidrome-disc {
 	object-fit: cover;
 	border-radius: 50%;
 	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
@@ -94,11 +110,6 @@
 .navidrome-disc-fallback svg {
 	width: 40%;
 	height: 40%;
-}
-
-.navidrome-waveform {
-	width: min(80%, 360px);
-	height: 160px;
 }
 
 .navidrome-trackinfo {
