@@ -51,9 +51,11 @@
 	width: 100%;
 	max-width: 600px;
 	margin: 0 auto;
-	/* Fill the pane the user gives us so the cover/waveform can scale up. */
-	min-height: 100%;
 	box-sizing: border-box;
+	/* This element is itself the scrollable tab body (flex:1 in the view's
+	   column), so it already fills the available height — no min-height needed.
+	   The cover/waveform region (flex:1 below) absorbs the slack; scrolling only
+	   kicks in when the pane is too short for the controls' minimum heights. */
 }
 
 /* The cover/waveform region absorbs all leftover vertical space; the media
