@@ -52,7 +52,7 @@ export interface Playlist {
 
 export type PlaybackMode = "normal" | "random";
 
-export type TabId = "library" | "nowPlaying";
+export type TabId = "nowPlaying" | "queue" | "library";
 
 export type CoverStyle = "vinyl" | "square" | "waveform";
 

@@ -257,6 +257,20 @@
 	background: var(--background-modifier-hover);
 }
 
+.navidrome-queue-item.is-current {
+	background: var(--background-modifier-hover);
+	border-left: 2px solid var(--interactive-accent);
+}
+
+.navidrome-queue-item.is-current .navidrome-queue-title {
+	color: var(--interactive-accent);
+	font-weight: 600;
+}
+
+.navidrome-queue-tab .navidrome-queue-head {
+	margin-top: 0;
+}
+
 .navidrome-queue-title {
 	font-size: var(--font-ui-small);
 	white-space: nowrap;

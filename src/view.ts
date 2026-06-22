@@ -2,6 +2,7 @@ import { ItemView, WorkspaceLeaf } from "obsidian";
 import type NavidromePlugin from "../main";
 import { LibraryTab } from "./tabs/library";
 import { NowPlayingTab } from "./tabs/nowPlaying";
+import { QueueTab } from "./tabs/queue";
 import { TabId } from "./types";
 
 export const VIEW_TYPE_NAVIDROME = "navidrome-player-view";
@@ -14,8 +15,11 @@ export const VIEW_TYPE_NAVIDROME = "navidrome-player-view";
 export class NavidromeView extends ItemView {
 	private libraryEl!: HTMLElement;
 	private nowPlayingEl!: HTMLElement;
+	private queueEl!: HTMLElement;
 	private libraryTab!: LibraryTab;
 	private nowPlayingTab!: NowPlayingTab;
+	private queueTab!: QueueTab;
+	private bodies: Record<TabId, HTMLElement> = {} as never;
 	private segButtons: Record<TabId, HTMLButtonElement> = {} as never;
 
 	constructor(leaf: WorkspaceLeaf, private plugin: NavidromePlugin) {
@@ -47,11 +51,18 @@ export class NavidromeView extends ItemView {
 			this.segButtons[id] = b;
 		};
 		mk("nowPlaying", "Now Playing");
+		mk("queue", "Queue");
 		mk("library", "Library");
 
-		// Tab bodies (both stay mounted).
+		// Tab bodies (all stay mounted).
 		this.nowPlayingEl = container.createDiv({ cls: "navidrome-tabbody" });
+		this.queueEl = container.createDiv({ cls: "navidrome-tabbody" });
 		this.libraryEl = container.createDiv({ cls: "navidrome-tabbody" });
+		this.bodies = {
+			nowPlaying: this.nowPlayingEl,
+			queue: this.queueEl,
+			library: this.libraryEl,
+		};
 
 		this.nowPlayingTab = new NowPlayingTab(
 			this.nowPlayingEl,
@@ -59,6 +70,7 @@ export class NavidromeView extends ItemView {
 			() => this.plugin.getClient(),
 			() => this.plugin.settings
 		);
+		this.queueTab = new QueueTab(this.queueEl, this.plugin.player);
 		this.libraryTab = new LibraryTab(
 			this.libraryEl,
 			this.plugin.player,
@@ -70,10 +82,10 @@ export class NavidromeView extends ItemView {
 	}
 
 	private switchTab(id: TabId) {
-		this.nowPlayingEl.style.display = id === "nowPlaying" ? "" : "none";
-		this.libraryEl.style.display = id === "library" ? "" : "none";
-		this.segButtons.nowPlaying.toggleClass("is-active", id === "nowPlaying");
-		this.segButtons.library.toggleClass("is-active", id === "library");
+		for (const key of Object.keys(this.bodies) as TabId[]) {
+			this.bodies[key].style.display = key === id ? "" : "none";
+			this.segButtons[key].toggleClass("is-active", key === id);
+		}
 		if (id === "library") this.libraryTab.onShow();
 		void this.plugin.setActiveTab(id);
 	}
@@ -91,7 +103,8 @@ export class NavidromeView extends ItemView {
 
 	async onClose(): Promise<void> {
 		// The player lives on the plugin and keeps playing, but the view's
-		// pollers/animations and change subscription must be released.
+		// pollers/animations and change subscriptions must be released.
 		this.nowPlayingTab?.destroy();
+		this.queueTab?.destroy();
 	}
 }

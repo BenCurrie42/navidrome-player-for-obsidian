@@ -30,8 +30,6 @@ export class NowPlayingTab {
 	private curTime!: HTMLElement;
 	private durTime!: HTMLElement;
 	private volume!: HTMLInputElement;
-	private queueHead!: HTMLElement;
-	private queueList!: HTMLElement;
 	private seeking = false;
 
 	// Radio "now playing" detection + waveform animation state.
@@ -181,13 +179,6 @@ export class NowPlayingTab {
 		this.volume.addEventListener("input", () =>
 			this.player.setVolume(Number(this.volume.value))
 		);
-
-		// Up-next queue.
-		this.queueHead = this.root.createEl("h4", {
-			cls: "navidrome-queue-head",
-			text: "Up next",
-		});
-		this.queueList = this.root.createDiv({ cls: "navidrome-queue" });
 	}
 
 	private bindAudio() {
@@ -393,31 +384,5 @@ export class NowPlayingTab {
 
 		// Volume (in case it changed elsewhere).
 		this.volume.value = String(this.player.volume);
-
-		// Up-next queue: meaningless for a single live stream.
-		this.queueHead.style.display = isRadio ? "none" : "";
-		this.queueList.style.display = isRadio ? "none" : "";
-		if (!isRadio) this.renderQueue();
-	}
-
-	private renderQueue() {
-		this.queueList.empty();
-		const upcoming = this.player.queue.slice(this.player.index + 1);
-		if (upcoming.length === 0) {
-			this.queueList.createDiv({
-				cls: "navidrome-queue-empty",
-				text: "Queue is empty.",
-			});
-			return;
-		}
-		upcoming.forEach((t, i) => {
-			const realIndex = this.player.index + 1 + i;
-			const row = this.queueList.createDiv({ cls: "navidrome-queue-item" });
-			row.createSpan({ cls: "navidrome-queue-title", text: t.title });
-			if (t.artist) {
-				row.createSpan({ cls: "navidrome-queue-artist", text: t.artist });
-			}
-			row.onclick = () => this.player.jumpTo(realIndex);
-		});
 	}
 }
