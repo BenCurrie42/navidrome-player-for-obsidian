@@ -1,5 +1,5 @@
 import { SubsonicClient } from "./subsonic";
-import { PersistedState, PlaybackMode, Track } from "./types";
+import { PersistedState, PlaybackMode, RadioStation, Track } from "./types";
 
 /** Number of upcoming tracks below which random/vibes mode refills the queue. */
 const REFILL_THRESHOLD = 5;
@@ -89,6 +89,20 @@ export class Player {
 		this.playCurrent(autoplay);
 	}
 
+	/** Load a single radio station as a one-item queue and start playing. */
+	playRadio(station: RadioStation) {
+		const track: Track = {
+			id: station.id,
+			title: station.name,
+			streamUrl: station.streamUrl,
+			isRadio: true,
+			coverArt: undefined,
+		};
+		this.queue = [track];
+		this.index = 0;
+		this.playCurrent(true);
+	}
+
 	/** Append more tracks without disturbing playback (used by vibes refill). */
 	append(tracks: Track[]) {
 		this.queue.push(...tracks);
@@ -105,15 +119,24 @@ export class Player {
 	private playCurrent(autoplay: boolean) {
 		const client = this.getClient();
 		const track = this.current;
-		if (!client || !track) return;
-		this.audio.src = client.streamUrl(track.id);
+		if (!track) return;
+		// Radio stations carry their own streamUrl; regular tracks need a client.
+		if (track.streamUrl) {
+			this.audio.src = track.streamUrl;
+		} else {
+			if (!client) return;
+			this.audio.src = client.streamUrl(track.id);
+		}
 		this.audio.load();
 		if (autoplay) {
 			void this.audio.play().catch(() => {
 				this.onError(`Could not start "${track.title}".`);
 			});
 		}
-		this.prefetchNext();
+		// Skip prefetch and queue refill for radio — live streams have no "next".
+		if (!track.isRadio) {
+			this.prefetchNext();
+		}
 		this.emitAndSchedule();
 	}
 
@@ -121,7 +144,7 @@ export class Player {
 	private prefetchNext() {
 		const client = this.getClient();
 		const next = this.queue[this.index + 1];
-		if (!client || !next) return;
+		if (!client || !next || next.isRadio) return;
 		this.prefetchAudio.src = client.streamUrl(next.id);
 		this.prefetchAudio.load();
 	}
@@ -144,6 +167,8 @@ export class Player {
 	}
 
 	next() {
+		// Do not auto-advance off a radio station — a live stream ending is a dropout.
+		if (this.current?.isRadio) return;
 		if (this.index < this.queue.length - 1) {
 			this.index++;
 			this.playCurrent(true);
@@ -196,7 +221,12 @@ export class Player {
 		this.persist();
 	}
 
-	private async handleEnded() {
+	private handleEnded() {
+		if (this.current?.isRadio) {
+			// A radio stream ending unexpectedly is a dropout, not a normal track end.
+			this.onError(`Stream ended unexpectedly for "${this.current.title}".`);
+			return;
+		}
 		this.next();
 	}
 
@@ -256,17 +286,23 @@ export class Player {
 
 		const track = this.current;
 		const client = this.getClient();
-		if (track && client) {
-			this.audio.src = client.streamUrl(track.id);
-			const pos = state.position ?? 0;
-			if (pos > 0) {
-				const seekOnce = () => {
-					this.audio.currentTime = pos;
-					this.audio.removeEventListener("loadedmetadata", seekOnce);
-				};
-				this.audio.addEventListener("loadedmetadata", seekOnce);
+		if (track) {
+			if (track.streamUrl) {
+				// Radio station — stream URL is self-contained; no position restore.
+				this.audio.src = track.streamUrl;
+				this.audio.load();
+			} else if (client) {
+				this.audio.src = client.streamUrl(track.id);
+				const pos = state.position ?? 0;
+				if (pos > 0) {
+					const seekOnce = () => {
+						this.audio.currentTime = pos;
+						this.audio.removeEventListener("loadedmetadata", seekOnce);
+					};
+					this.audio.addEventListener("loadedmetadata", seekOnce);
+				}
+				this.audio.load();
 			}
-			this.audio.load();
 		}
 		this.emit();
 	}

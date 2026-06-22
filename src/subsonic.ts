@@ -1,6 +1,6 @@
 import { requestUrl } from "obsidian";
 import { createHash, randomBytes } from "crypto";
-import { Album, Artist, NavidromeSettings, Playlist, Track } from "./types";
+import { Album, Artist, NavidromeSettings, Playlist, RadioStation, Track } from "./types";
 
 const API_VERSION = "1.16.1";
 const CLIENT_NAME = "navidrome-player";
@@ -66,6 +66,13 @@ interface RawPlaylist {
 	songCount?: number;
 	coverArt?: string;
 	entry?: RawSong[];
+}
+
+interface RawRadioStation {
+	id: string;
+	name: string;
+	streamUrl: string;
+	homepageUrl?: string;
 }
 
 // --- mappers ---------------------------------------------------------------
@@ -264,6 +271,18 @@ export class SubsonicClient {
 			id,
 		});
 		return (r.playlist?.entry ?? []).map(toTrack);
+	}
+
+	async getRadioStations(): Promise<RadioStation[]> {
+		const r = await this.request<{
+			internetRadioStations?: { internetRadioStation?: RawRadioStation[] };
+		}>("getInternetRadioStations");
+		return (r.internetRadioStations?.internetRadioStation ?? []).map((s) => ({
+			id: s.id,
+			name: s.name,
+			streamUrl: s.streamUrl,
+			homepageUrl: s.homepageUrl,
+		}));
 	}
 
 	// --- media URLs (loaded directly by <audio>/<img>, no CORS needed) -----

@@ -13,6 +13,17 @@ export interface Track {
 	duration?: number; // seconds
 	track?: number;
 	contentType?: string;
+	/** When set, the player streams this URL directly instead of building one from id. */
+	streamUrl?: string;
+	/** Marks the entry as a live radio stream (disables auto-advance/refill/prefetch). */
+	isRadio?: boolean;
+}
+
+export interface RadioStation {
+	id: string;
+	name: string;
+	streamUrl: string;
+	homepageUrl?: string;
 }
 
 export interface Album {

@@ -17,9 +17,13 @@ export class NowPlayingTab {
 	private titleEl!: HTMLElement;
 	private artistEl!: HTMLElement;
 	private albumEl!: HTMLElement;
+	private liveBadge!: HTMLElement;
 	private playBtn!: HTMLButtonElement;
+	private prevBtn!: HTMLButtonElement;
+	private nextBtn!: HTMLButtonElement;
 	private shuffleBtn!: HTMLButtonElement;
 	private randomBtn!: HTMLButtonElement;
+	private seekRow!: HTMLElement;
 	private seek!: HTMLInputElement;
 	private curTime!: HTMLElement;
 	private durTime!: HTMLElement;
@@ -59,18 +63,20 @@ export class NowPlayingTab {
 
 		const info = this.root.createDiv({ cls: "navidrome-trackinfo" });
 		this.titleEl = info.createDiv({ cls: "navidrome-title", text: "Nothing playing" });
+		this.liveBadge = info.createDiv({ cls: "navidrome-live-badge", text: "LIVE" });
+		this.liveBadge.style.display = "none";
 		this.artistEl = info.createDiv({ cls: "navidrome-artist" });
 		this.albumEl = info.createDiv({ cls: "navidrome-album" });
 
 		// Seek bar with time labels.
-		const seekRow = this.root.createDiv({ cls: "navidrome-seekrow" });
-		this.curTime = seekRow.createSpan({ cls: "navidrome-time", text: "0:00" });
-		this.seek = seekRow.createEl("input", { cls: "navidrome-seek" });
+		this.seekRow = this.root.createDiv({ cls: "navidrome-seekrow" });
+		this.curTime = this.seekRow.createSpan({ cls: "navidrome-time", text: "0:00" });
+		this.seek = this.seekRow.createEl("input", { cls: "navidrome-seek" });
 		this.seek.type = "range";
 		this.seek.min = "0";
 		this.seek.max = "0";
 		this.seek.value = "0";
-		this.durTime = seekRow.createSpan({ cls: "navidrome-time", text: "0:00" });
+		this.durTime = this.seekRow.createSpan({ cls: "navidrome-time", text: "0:00" });
 
 		this.seek.addEventListener("input", () => {
 			this.seeking = true;
@@ -83,17 +89,17 @@ export class NowPlayingTab {
 
 		// Transport row.
 		const transport = this.root.createDiv({ cls: "navidrome-transport" });
-		const prevBtn = transport.createEl("button", { cls: "navidrome-btn" });
-		setIcon(prevBtn, "skip-back");
-		prevBtn.onclick = () => this.player.prev();
+		this.prevBtn = transport.createEl("button", { cls: "navidrome-btn" });
+		setIcon(this.prevBtn, "skip-back");
+		this.prevBtn.onclick = () => this.player.prev();
 
 		this.playBtn = transport.createEl("button", { cls: "navidrome-btn navidrome-btn-play" });
 		setIcon(this.playBtn, "play");
 		this.playBtn.onclick = () => this.player.togglePlay();
 
-		const nextBtn = transport.createEl("button", { cls: "navidrome-btn" });
-		setIcon(nextBtn, "skip-forward");
-		nextBtn.onclick = () => this.player.next();
+		this.nextBtn = transport.createEl("button", { cls: "navidrome-btn" });
+		setIcon(this.nextBtn, "skip-forward");
+		this.nextBtn.onclick = () => this.player.next();
 
 		// Secondary controls: shuffle, vibes, volume.
 		const controls = this.root.createDiv({ cls: "navidrome-controls" });
@@ -190,10 +196,20 @@ export class NowPlayingTab {
 		}
 		this.updateSpin();
 
+		const isRadio = track?.isRadio ?? false;
+
+		// Seek bar: hidden for radio (no meaningful duration).
+		this.seekRow.style.display = isRadio ? "none" : "";
+
 		// Metadata.
 		this.titleEl.setText(track?.title ?? "Nothing playing");
-		this.artistEl.setText(track?.artist ?? "");
-		this.albumEl.setText(track?.album ?? "");
+		this.liveBadge.style.display = isRadio ? "" : "none";
+		this.artistEl.setText(isRadio ? "" : (track?.artist ?? ""));
+		this.albumEl.setText(isRadio ? "" : (track?.album ?? ""));
+
+		// Prev/next: hidden for radio (no queue to navigate).
+		this.prevBtn.style.display = isRadio ? "none" : "";
+		this.nextBtn.style.display = isRadio ? "none" : "";
 
 		// Play button glyph.
 		setIcon(this.playBtn, this.player.isPlaying ? "pause" : "play");

@@ -408,3 +408,63 @@
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 }
+
+/* radio stations */
+
+.navidrome-radio-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.navidrome-radio-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 6px;
+	cursor: pointer;
+	border-radius: var(--radius-s);
+}
+
+.navidrome-radio-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.navidrome-radio-icon {
+	display: flex;
+	color: var(--text-muted);
+}
+
+.navidrome-radio-meta {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.navidrome-radio-name {
+	font-size: var(--font-ui-small);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.navidrome-radio-homepage {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* radio now-playing badge */
+
+.navidrome-live-badge {
+	display: inline-block;
+	background: var(--color-red);
+	color: #fff;
+	font-size: var(--font-ui-smaller);
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	padding: 1px 6px;
+	border-radius: var(--radius-s);
+	margin: 2px auto 0;
+}
