@@ -1,7 +1,10 @@
 import { Notice, setIcon } from "obsidian";
 import { Player } from "../player";
 import { SubsonicClient } from "../subsonic";
-import { Album } from "../types";
+import { Album, Artist, SearchResults, Track } from "../types";
+
+const SEARCH_DEBOUNCE_MS = 250;
+const SEARCH_MIN_CHARS = 2;
 
 type SubviewId = "albums" | "artists" | "playlists";
 
@@ -15,6 +18,8 @@ export class LibraryTab {
 		artists: false,
 		playlists: false,
 	};
+	private query = "";
+	private searchTimer: number | null = null;
 
 	constructor(
 		private root: HTMLElement,
@@ -28,6 +33,14 @@ export class LibraryTab {
 	private build() {
 		this.root.empty();
 		this.root.addClass("navidrome-library");
+
+		const search = this.root.createDiv({ cls: "navidrome-search" });
+		setIcon(search.createSpan({ cls: "navidrome-search-icon" }), "search");
+		const input = search.createEl("input", {
+			cls: "navidrome-search-input",
+			attr: { type: "search", placeholder: "Search songs, albums, artists…" },
+		});
+		input.oninput = () => this.onQueryInput(input.value);
 
 		const seg = this.root.createDiv({ cls: "navidrome-subseg" });
 		const mk = (id: SubviewId, label: string) => {
@@ -53,6 +66,7 @@ export class LibraryTab {
 
 	/** Called by the view when the Library tab becomes visible. */
 	onShow() {
+		if (this.query.length >= SEARCH_MIN_CHARS) return; // keep results on screen
 		if (!this.loaded[this.subview]) this.showSubview(this.subview);
 	}
 
@@ -81,6 +95,87 @@ export class LibraryTab {
 	private showLoading() {
 		this.content.empty();
 		this.content.createDiv({ cls: "navidrome-loading", text: "Loading…" });
+	}
+
+	// --- search ------------------------------------------------------------
+
+	private onQueryInput(raw: string) {
+		this.query = raw.trim();
+		if (this.searchTimer !== null) window.clearTimeout(this.searchTimer);
+
+		if (this.query.length < SEARCH_MIN_CHARS) {
+			// Empty / too-short query: drop back to the normal browse view.
+			this.showSubview(this.subview);
+			return;
+		}
+		this.searchTimer = window.setTimeout(
+			() => void this.runSearch(this.query),
+			SEARCH_DEBOUNCE_MS
+		);
+	}
+
+	private async runSearch(query: string) {
+		const client = this.requireClient();
+		if (!client) return;
+		this.showLoading();
+		try {
+			const results = await client.search(query);
+			// Ignore a response the user has already typed past.
+			if (query !== this.query) return;
+			this.renderSearchResults(results);
+		} catch (e) {
+			if (query !== this.query) return;
+			this.renderError(e);
+		}
+	}
+
+	private renderSearchResults(results: SearchResults) {
+		this.content.empty();
+		const client = this.getClient();
+		if (!client) return;
+
+		const { tracks, albums, artists } = results;
+		if (tracks.length === 0 && albums.length === 0 && artists.length === 0) {
+			this.content.createDiv({ cls: "navidrome-empty", text: "No results." });
+			return;
+		}
+
+		if (tracks.length > 0) {
+			const section = this.section("Songs");
+			this.renderTrackList(tracks, section);
+		}
+		if (albums.length > 0) {
+			const section = this.section("Albums");
+			this.renderAlbumGrid(albums, section);
+		}
+		if (artists.length > 0) {
+			const section = this.section("Artists");
+			const list = section.createDiv({ cls: "navidrome-artist-list" });
+			for (const artist of artists) this.renderArtistRow(artist, list, client);
+		}
+	}
+
+	private section(label: string): HTMLElement {
+		const wrap = this.content.createDiv({ cls: "navidrome-results-section" });
+		wrap.createDiv({ cls: "navidrome-results-heading", text: label });
+		return wrap;
+	}
+
+	private renderTrackList(tracks: Track[], target: HTMLElement) {
+		const list = target.createDiv({ cls: "navidrome-track-list" });
+		tracks.forEach((track, i) => {
+			const row = list.createDiv({ cls: "navidrome-track-row" });
+			setIcon(row.createSpan({ cls: "navidrome-track-icon" }), "music");
+			const meta = row.createDiv({ cls: "navidrome-track-meta" });
+			meta.createSpan({ cls: "navidrome-track-title", text: track.title });
+			if (track.artist) {
+				meta.createSpan({ cls: "navidrome-track-artist", text: track.artist });
+			}
+			row.onclick = () => {
+				this.player.loadQueue(tracks, i, true);
+				new Notice(`Playing "${track.title}"`);
+			};
+		});
 	}
 
 	// --- albums ------------------------------------------------------------
@@ -155,41 +250,44 @@ export class LibraryTab {
 				return;
 			}
 			const list = this.content.createDiv({ cls: "navidrome-artist-list" });
-			for (const artist of artists) {
-				const row = list.createDiv({ cls: "navidrome-artist-row" });
-				const header = row.createDiv({ cls: "navidrome-artist-header" });
-				const chevron = header.createSpan({ cls: "navidrome-chevron" });
-				setIcon(chevron, "chevron-right");
-				header.createSpan({ cls: "navidrome-artist-name", text: artist.name });
-				const albumsBox = row.createDiv({ cls: "navidrome-artist-albums" });
-				albumsBox.style.display = "none";
-
-				let expanded = false;
-				let albumsLoaded = false;
-				header.onclick = async () => {
-					expanded = !expanded;
-					chevron.empty();
-					setIcon(chevron, expanded ? "chevron-down" : "chevron-right");
-					albumsBox.style.display = expanded ? "" : "none";
-					if (expanded && !albumsLoaded) {
-						albumsBox.createDiv({ cls: "navidrome-loading", text: "Loading…" });
-						try {
-							const albums = await client.getArtistAlbums(artist.id);
-							albumsLoaded = true;
-							this.renderAlbumGrid(albums, albumsBox);
-						} catch (e) {
-							albumsBox.empty();
-							albumsBox.createDiv({
-								cls: "navidrome-error",
-								text: `Could not load albums: ${(e as Error).message}`,
-							});
-						}
-					}
-				};
-			}
+			for (const artist of artists) this.renderArtistRow(artist, list, client);
 		} catch (e) {
 			this.renderError(e);
 		}
+	}
+
+	/** One expandable artist row (header → chevron-toggled inline album grid). */
+	private renderArtistRow(artist: Artist, list: HTMLElement, client: SubsonicClient) {
+		const row = list.createDiv({ cls: "navidrome-artist-row" });
+		const header = row.createDiv({ cls: "navidrome-artist-header" });
+		const chevron = header.createSpan({ cls: "navidrome-chevron" });
+		setIcon(chevron, "chevron-right");
+		header.createSpan({ cls: "navidrome-artist-name", text: artist.name });
+		const albumsBox = row.createDiv({ cls: "navidrome-artist-albums" });
+		albumsBox.style.display = "none";
+
+		let expanded = false;
+		let albumsLoaded = false;
+		header.onclick = async () => {
+			expanded = !expanded;
+			chevron.empty();
+			setIcon(chevron, expanded ? "chevron-down" : "chevron-right");
+			albumsBox.style.display = expanded ? "" : "none";
+			if (expanded && !albumsLoaded) {
+				albumsBox.createDiv({ cls: "navidrome-loading", text: "Loading…" });
+				try {
+					const albums = await client.getArtistAlbums(artist.id);
+					albumsLoaded = true;
+					this.renderAlbumGrid(albums, albumsBox);
+				} catch (e) {
+					albumsBox.empty();
+					albumsBox.createDiv({
+						cls: "navidrome-error",
+						text: `Could not load albums: ${(e as Error).message}`,
+					});
+				}
+			}
+		};
 	}
 
 	// --- playlists ---------------------------------------------------------

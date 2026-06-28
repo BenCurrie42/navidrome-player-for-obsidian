@@ -1,6 +1,6 @@
 import { requestUrl } from "obsidian";
 import { createHash, randomBytes } from "crypto";
-import { Album, Artist, NavidromeSettings, Playlist, Track } from "./types";
+import { Album, Artist, NavidromeSettings, Playlist, SearchResults, Track } from "./types";
 
 const API_VERSION = "1.16.1";
 const CLIENT_NAME = "navidrome-player";
@@ -237,6 +237,31 @@ export class SubsonicClient {
 	async getAlbumTracks(id: string): Promise<Track[]> {
 		const r = await this.request<{ album?: RawAlbum }>("getAlbum", { id });
 		return (r.album?.song ?? []).map(toTrack);
+	}
+
+	/** Server-side search across artists, albums, and songs in one call. */
+	async search(
+		query: string,
+		{ artistCount = 20, albumCount = 20, songCount = 40 } = {}
+	): Promise<SearchResults> {
+		const r = await this.request<{
+			searchResult3?: {
+				artist?: RawArtist[];
+				album?: RawAlbum[];
+				song?: RawSong[];
+			};
+		}>("search3", { query, artistCount, albumCount, songCount });
+		const res = r.searchResult3 ?? {};
+		return {
+			artists: (res.artist ?? []).map((a) => ({
+				id: a.id,
+				name: a.name,
+				albumCount: a.albumCount,
+				coverArt: a.coverArt,
+			})),
+			albums: (res.album ?? []).map(toAlbum),
+			tracks: (res.song ?? []).map(toTrack),
+		};
 	}
 
 	async getRandomSongs(size = 50): Promise<Track[]> {

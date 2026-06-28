@@ -408,3 +408,79 @@
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 }
+
+/* --- search ------------------------------------------------------------ */
+
+.navidrome-search {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0 2px 8px;
+}
+
+.navidrome-search-icon {
+	display: flex;
+	color: var(--text-muted);
+}
+
+.navidrome-search-input {
+	flex: 1;
+	min-width: 0;
+	font-size: var(--font-ui-small);
+}
+
+.navidrome-results-section {
+	margin-bottom: 14px;
+}
+
+.navidrome-results-heading {
+	font-size: var(--font-ui-smaller);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--text-muted);
+	margin: 4px 0 6px;
+}
+
+.navidrome-track-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.navidrome-track-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px;
+	cursor: pointer;
+	border-radius: var(--radius-s);
+}
+
+.navidrome-track-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.navidrome-track-icon {
+	display: flex;
+	color: var(--text-muted);
+}
+
+.navidrome-track-meta {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.navidrome-track-title {
+	font-size: var(--font-ui-small);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.navidrome-track-artist {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

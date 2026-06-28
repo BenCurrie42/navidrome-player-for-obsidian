@@ -39,6 +39,12 @@ export interface Playlist {
 	coverArt?: string;
 }
 
+export interface SearchResults {
+	artists: Artist[];
+	albums: Album[];
+	tracks: Track[];
+}
+
 export type PlaybackMode = "normal" | "random";
 
 export type TabId = "library" | "nowPlaying";
