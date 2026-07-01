@@ -285,6 +285,31 @@ export class SubsonicClient {
 		}));
 	}
 
+	async search3(
+		query: string,
+		opts?: { artistCount?: number; albumCount?: number; songCount?: number }
+	): Promise<{ artists: Artist[]; albums: Album[]; songs: Track[] }> {
+		const r = await this.request<{
+			searchResult3?: { artist?: RawArtist[]; album?: RawAlbum[]; song?: RawSong[] };
+		}>("search3", {
+			query,
+			artistCount: opts?.artistCount ?? 20,
+			albumCount: opts?.albumCount ?? 20,
+			songCount: opts?.songCount ?? 20,
+		});
+		const result = r.searchResult3;
+		return {
+			artists: (result?.artist ?? []).map((a) => ({
+				id: a.id,
+				name: a.name,
+				albumCount: a.albumCount,
+				coverArt: a.coverArt,
+			})),
+			albums: (result?.album ?? []).map(toAlbum),
+			songs: (result?.song ?? []).map(toTrack),
+		};
+	}
+
 	// --- media URLs (loaded directly by <audio>/<img>, no CORS needed) -----
 
 	/** Original-quality stream: format=raw + maxBitRate=0 → no transcode-down. */
