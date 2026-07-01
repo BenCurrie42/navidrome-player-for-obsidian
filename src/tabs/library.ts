@@ -3,7 +3,7 @@ import { Player } from "../player";
 import { SubsonicClient } from "../subsonic";
 import { Album } from "../types";
 
-type SubviewId = "albums" | "artists" | "playlists";
+type SubviewId = "albums" | "artists" | "playlists" | "radio";
 
 /** Library tab: browse albums, artists, and playlists; click to play. */
 export class LibraryTab {
@@ -14,6 +14,7 @@ export class LibraryTab {
 		albums: false,
 		artists: false,
 		playlists: false,
+		radio: false,
 	};
 
 	constructor(
@@ -38,6 +39,7 @@ export class LibraryTab {
 		mk("albums", "Albums");
 		mk("artists", "Artists");
 		mk("playlists", "Playlists");
+		mk("radio", "Radio");
 
 		const refresh = seg.createEl("button", { cls: "navidrome-subseg-btn navidrome-refresh" });
 		setIcon(refresh, "refresh-cw");
@@ -63,7 +65,8 @@ export class LibraryTab {
 		}
 		if (id === "albums") void this.loadAlbums();
 		else if (id === "artists") void this.loadArtists();
-		else void this.loadPlaylists();
+		else if (id === "playlists") void this.loadPlaylists();
+		else void this.loadRadio();
 	}
 
 	private requireClient(): SubsonicClient | null {
@@ -230,6 +233,39 @@ export class LibraryTab {
 					} catch (e) {
 						this.onError(`Could not load playlist: ${(e as Error).message}`);
 					}
+				};
+			}
+		} catch (e) {
+			this.renderError(e);
+		}
+	}
+
+	// --- radio ----------------------------------------------------------------
+
+	private async loadRadio() {
+		const client = this.requireClient();
+		if (!client) return;
+		this.showLoading();
+		try {
+			const stations = await client.getRadioStations();
+			this.loaded.radio = true;
+			this.content.empty();
+			if (stations.length === 0) {
+				this.content.createDiv({ cls: "navidrome-empty", text: "No saved radio stations." });
+				return;
+			}
+			const list = this.content.createDiv({ cls: "navidrome-radio-list" });
+			for (const station of stations) {
+				const row = list.createDiv({ cls: "navidrome-radio-row" });
+				setIcon(row.createSpan({ cls: "navidrome-radio-icon" }), "radio");
+				const meta = row.createDiv({ cls: "navidrome-radio-meta" });
+				meta.createSpan({ cls: "navidrome-radio-name", text: station.name });
+				if (station.homepageUrl) {
+					meta.createSpan({ cls: "navidrome-radio-homepage", text: station.homepageUrl });
+				}
+				row.onclick = () => {
+					this.player.playRadio(station);
+					new Notice(`Playing "${station.name}"`);
 				};
 			}
 		} catch (e) {

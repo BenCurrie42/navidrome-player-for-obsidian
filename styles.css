@@ -48,13 +48,24 @@
 	flex-direction: column;
 	align-items: center;
 	gap: 10px;
-	max-width: 460px;
+	width: 100%;
+	max-width: 600px;
 	margin: 0 auto;
+	box-sizing: border-box;
+	/* This element is itself the scrollable tab body (flex:1 in the view's
+	   column), so it already fills the available height — no min-height needed.
+	   The cover/waveform region (flex:1 below) absorbs the slack; scrolling only
+	   kicks in when the pane is too short for the controls' minimum heights. */
 }
 
+/* The cover/waveform region absorbs all leftover vertical space; the media
+   inside scales to the largest square that fits, so it tracks pane size. */
 .navidrome-cover-wrap {
 	width: 100%;
+	flex: 1 1 auto;
+	min-height: 120px;
 	display: flex;
+	align-items: center;
 	justify-content: center;
 	padding: 12px 0;
 }
@@ -64,9 +75,16 @@
 	to { transform: rotate(360deg); }
 }
 
-.navidrome-disc {
-	width: min(80%, 360px);
+.navidrome-disc,
+.navidrome-waveform {
+	height: 100%;
+	width: auto;
+	max-width: 100%;
+	max-height: 100%;
 	aspect-ratio: 1 / 1;
+}
+
+.navidrome-disc {
 	object-fit: cover;
 	border-radius: 50%;
 	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
@@ -239,6 +257,20 @@
 	background: var(--background-modifier-hover);
 }
 
+.navidrome-queue-item.is-current {
+	background: var(--background-modifier-hover);
+	border-left: 2px solid var(--interactive-accent);
+}
+
+.navidrome-queue-item.is-current .navidrome-queue-title {
+	color: var(--interactive-accent);
+	font-weight: 600;
+}
+
+.navidrome-queue-tab .navidrome-queue-head {
+	margin-top: 0;
+}
+
 .navidrome-queue-title {
 	font-size: var(--font-ui-small);
 	white-space: nowrap;
@@ -407,4 +439,64 @@
 .navidrome-playlist-count {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
+}
+
+/* radio stations */
+
+.navidrome-radio-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.navidrome-radio-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 6px;
+	cursor: pointer;
+	border-radius: var(--radius-s);
+}
+
+.navidrome-radio-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.navidrome-radio-icon {
+	display: flex;
+	color: var(--text-muted);
+}
+
+.navidrome-radio-meta {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.navidrome-radio-name {
+	font-size: var(--font-ui-small);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.navidrome-radio-homepage {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* radio now-playing badge */
+
+.navidrome-live-badge {
+	display: inline-block;
+	background: var(--color-red);
+	color: #fff;
+	font-size: var(--font-ui-smaller);
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	padding: 1px 6px;
+	border-radius: var(--radius-s);
+	margin: 2px auto 0;
 }

@@ -1,4 +1,4 @@
-# 🎵 Navidrome Player for Obsidian
+# Navidrome Player for Obsidian
 
 ![Navidrome Player docked in the Obsidian sidebar](assets/screenshot.png)
 
@@ -6,6 +6,7 @@ I spend hours in Obsidian and got tired of leaving my vault to skip a track on m
 [Navidrome](https://www.navidrome.org/) server. So I built a little player that lives in the
 sidebar, plays my library at full quality, and **spins a record while it goes**.
 
+>[!info]
 > **Desktop only** for now — mobile is on the list once the audio path is sorted.
 
 ## What it does
@@ -17,7 +18,8 @@ sidebar, plays my library at full quality, and **spins a record while it goes**.
 
 ## Getting started
 
-> Coming soon to the obsidian community but runs this way for now
+>[!info]
+>Coming soon to the obsidian community but runs this way for now
 
 You'll need a running Navidrome server (or anything that speaks the Subsonic API) and desktop
 Obsidian.
@@ -33,14 +35,7 @@ Enter your server details in **Settings → Navidrome Player** and hit **Test co
 Open the player from the music icon in the ribbon, or run "Open Navidrome Player" from the command
 palette. It docks in the right sidebar.
 
-## Dev
-
-- `npm run dev` — rebuilds `main.js` as you save
-- `npm run build` — type-check (strict) + production build
-
-The codebase is small on purpose: a thin Subsonic client (`src/subsonic.ts`), a player/queue store
-(`src/player.ts`), and a sidebar view with two tabs (`src/view.ts`, `src/tabs/`). No framework.
-
+>[!info] A note on development
+>This tool was made with the assistance of AI coding tools
 ## License
-
 MIT
