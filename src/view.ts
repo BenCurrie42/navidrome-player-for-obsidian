@@ -12,6 +12,8 @@ export const VIEW_TYPE_NAVIDROME = "navidrome-player-view";
 const SEARCH_DEBOUNCE_MS = 250;
 /** Minimum query length before searching. */
 const SEARCH_MIN_CHARS = 2;
+/** Tab bar width below which the button row collapses into a dropdown. */
+const TABBAR_COLLAPSE_BREAKPOINT = 180;
 
 /**
  * Single right-leaf view hosting the Library and Now Playing tabs. Both tab
@@ -29,6 +31,8 @@ export class NavidromeView extends ItemView {
 	private queueTab!: QueueTab;
 	private bodies: Record<TabId, HTMLElement> = {} as never;
 	private segButtons: Record<TabId, HTMLButtonElement> = {} as never;
+	private tabSelect!: HTMLSelectElement;
+	private tabbarResizeObs?: ResizeObserver;
 	private searchInput!: HTMLInputElement;
 	private searchClearBtn!: HTMLButtonElement;
 	private searchResultsEl!: HTMLElement;
@@ -69,6 +73,25 @@ export class NavidromeView extends ItemView {
 		mk("nowPlaying", "Now Playing");
 		mk("queue", "Queue");
 		mk("library", "Library");
+
+		// Collapsed-width dropdown — created once, shown/hidden via `is-collapsed`
+		// on the tab bar itself (CSS handles the swap, matching is-searching/is-active).
+		this.tabSelect = seg.createEl("select", { cls: "dropdown navidrome-tab-select" });
+		this.tabSelect.setAttr("aria-label", "Select tab");
+		const mkOption = (id: TabId, label: string) => {
+			this.tabSelect.createEl("option", { value: id, text: label });
+		};
+		mkOption("nowPlaying", "Now Playing");
+		mkOption("queue", "Queue");
+		mkOption("library", "Library");
+		this.tabSelect.onchange = () => this.switchTab(this.tabSelect.value as TabId);
+
+		this.tabbarResizeObs = new ResizeObserver(() => {
+			const width = seg.clientWidth;
+			if (width === 0) return; // bar is hidden (display:none while is-searching)
+			seg.toggleClass("is-collapsed", width < TABBAR_COLLAPSE_BREAKPOINT);
+		});
+		this.tabbarResizeObs.observe(seg);
 
 		// Tab bodies (all stay mounted).
 		this.nowPlayingEl = container.createDiv({ cls: "navidrome-tabbody" });
@@ -181,6 +204,7 @@ export class NavidromeView extends ItemView {
 		}
 		if (id === "library") this.libraryTab.onShow();
 		void this.plugin.setActiveTab(id);
+		this.tabSelect.value = id;
 	}
 
 	/** Re-build the Now Playing tab to pick up a settings change (e.g. coverStyle). */
@@ -199,5 +223,6 @@ export class NavidromeView extends ItemView {
 		// pollers/animations and change subscriptions must be released.
 		this.nowPlayingTab?.destroy();
 		this.queueTab?.destroy();
+		this.tabbarResizeObs?.disconnect();
 	}
 }
