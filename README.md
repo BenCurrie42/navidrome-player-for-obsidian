@@ -13,6 +13,8 @@ sidebar, plays my library at full quality, and **spins a record while it goes**.
 
 - **A spinning record** — cover art turns like vinyl while it plays, stops when you pause or not there is a square mode too. 🤷‍♂️ 
 - **Browse your library** — albums grid, artists with expandable albums, playlists
+- **Search everything** — one bar up top searches artists, albums, and songs across your library
+- **Internet radio** — the stations saved on your server show up under Radio and stream live, with best-effort now-playing info
 - **Shuffle & vibes mode** — shuffle the queue, or let it pull random songs from your whole library
 - **Two-minute setup** — server, username, password in settings, hit Test Connection, done
 

@@ -7,10 +7,12 @@ This document is binding for all AI agents working in this repo.
 Navidrome Player is a **desktop-only Obsidian plugin** that docks a music player in the
 right sidebar, connects to a [Navidrome](https://www.navidrome.org/) server over the
 Subsonic API (token auth), and streams the library at full quality so the user never
-leaves their vault. It's a single custom `ItemView` with two tabs — **Now Playing**
-(spinning cover art, transport, queue) and **Library** (albums, artists, playlists) —
-backed by a plain-TS queue/player store, an HTML5 `<audio>` element, and a thin typed
-Subsonic `fetch`/`requestUrl` client. The product spec lives in `prd.md`.
+leaves their vault. It's a single custom `ItemView` with three tabs — **Now Playing**
+(spinning/square/waveform cover art, transport), **Queue** (up-next list), and **Library**
+(albums, artists, playlists, and a Radio subview for saved internet stations) — plus a
+library search bar that overlays results across the tabs. It's backed by a plain-TS
+queue/player store, an HTML5 `<audio>` element, and a thin typed Subsonic
+`fetch`/`requestUrl` client. The product spec lives in `prd.md`.
 
 - **Language / Framework:** TypeScript (strict). Obsidian plugin API; no UI framework — plain DOM via `createEl`. CSS in `styles.css`.
 - **Package manager / runner:** npm
