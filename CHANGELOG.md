@@ -4,6 +4,21 @@ All notable changes to Navidrome Player are documented here. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-07-16
+
+Polish release: the tab bar now stays readable in a narrow sidebar.
+
+### Added
+
+- **Responsive tab bar** — when the sidebar is narrowed past 220px, the three tab buttons
+  (Now Playing / Queue / Library) collapse into a single full-width native `<select>` dropdown,
+  and expand back into buttons when widened (`TABBAR_COLLAPSE_BREAKPOINT`, `src/view.ts`). A
+  `ResizeObserver` on `.navidrome-tabbar` toggles an `is-collapsed` class; CSS handles the
+  button/dropdown swap. The dropdown uses Obsidian's built-in `dropdown` class so it matches the
+  theme in light and dark mode, carries an `aria-label`, and is kept in sync with the active tab
+  inside `switchTab()`. Width `0` is ignored so entering/exiting search (which hides the bar)
+  never thrashes the collapsed state; the observer is disconnected in `onClose()`.
+
 ## [0.1.2] - 2026-07-15
 
 Feature release adding internet radio and library search (PRD-04, PRD-05).
