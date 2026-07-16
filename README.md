@@ -6,12 +6,11 @@ I spend hours in Obsidian and got tired of leaving my vault to skip a track on m
 [Navidrome](https://www.navidrome.org/) server. So I built a little player that lives in the
 sidebar, plays my library at full quality, and **spins a record while it goes**.
 
->[!info]
 > **Desktop only** for now — mobile is on the list once the audio path is sorted.
 
 ## What it does
 
-- **A spinning record** — cover art turns like vinyl while it plays, stops when you pause or not there is a square mode too. 🤷‍♂️ 
+- **A spinning record** — cover art turns like vinyl while it plays, stops when you pause or not there is a square mode too. 🤷‍♂️
 - **Browse your library** — albums grid, artists with expandable albums, playlists
 - **Search everything** — one bar up top searches artists, albums, and songs across your library
 - **Internet radio** — the stations saved on your server show up under Radio and stream live, with best-effort now-playing info
@@ -20,8 +19,7 @@ sidebar, plays my library at full quality, and **spins a record while it goes**.
 
 ## Getting started
 
->[!info]
->Coming soon to the obsidian community but runs this way for now
+> Coming soon to the obsidian community but runs this way for now
 
 You'll need a running Navidrome server (or anything that speaks the Subsonic API) and desktop
 Obsidian.
@@ -37,7 +35,9 @@ Enter your server details in **Settings → Navidrome Player** and hit **Test co
 Open the player from the music icon in the ribbon, or run "Open Navidrome Player" from the command
 palette. It docks in the right sidebar.
 
->[!info] A note on development
->This tool was made with the assistance of AI coding tools
+> [!info] A note on development
+> This tool was made with the assistance of AI coding tools
+
 ## License
+
 MIT
