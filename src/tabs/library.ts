@@ -199,7 +199,7 @@ export class LibraryTab {
 				setIcon(chevron, "chevron-right");
 				header.createSpan({ cls: "navidrome-artist-name", text: artist.name });
 				const albumsBox = row.createDiv({ cls: "navidrome-artist-albums" });
-				albumsBox.style.display = "none";
+				albumsBox.hide();
 
 				let expanded = false;
 				let albumsLoaded = false;
@@ -207,7 +207,7 @@ export class LibraryTab {
 					expanded = !expanded;
 					chevron.empty();
 					setIcon(chevron, expanded ? "chevron-down" : "chevron-right");
-					albumsBox.style.display = expanded ? "" : "none";
+					albumsBox.toggle(expanded);
 					if (expanded && !albumsLoaded) {
 						albumsBox.createDiv({ cls: "navidrome-loading", text: "Loading…" });
 						try {

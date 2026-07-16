@@ -38,8 +38,8 @@ export default class NavidromePlugin extends Plugin {
 		this.addRibbonIcon("music", "Navidrome Player", () => this.activateView());
 
 		this.addCommand({
-			id: "open-navidrome-player",
-			name: "Open Navidrome Player",
+			id: "open",
+			name: "Open player",
 			callback: () => this.activateView(),
 		});
 
@@ -120,6 +120,6 @@ export default class NavidromePlugin extends Plugin {
 			leaf = workspace.getRightLeaf(false);
 			await leaf?.setViewState({ type: VIEW_TYPE_NAVIDROME, active: true });
 		}
-		if (leaf) workspace.revealLeaf(leaf);
+		if (leaf) await workspace.revealLeaf(leaf);
 	}
 }
