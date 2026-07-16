@@ -134,6 +134,19 @@
 	color: var(--text-on-accent);
 }
 
+.navidrome-tab-select {
+	display: none;
+	width: 100%;
+}
+
+.navidrome-tabbar.is-collapsed .navidrome-tab {
+	display: none;
+}
+
+.navidrome-tabbar.is-collapsed .navidrome-tab-select {
+	display: block;
+}
+
 .navidrome-tabbody {
 	flex: 1 1 auto;
 	overflow-y: auto;
