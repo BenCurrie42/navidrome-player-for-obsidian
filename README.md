@@ -35,7 +35,6 @@ Enter your server details in **Settings → Navidrome Player** and hit **Test co
 Open the player from the music icon in the ribbon, or run "Open Navidrome Player" from the command
 palette. It docks in the right sidebar.
 
-> [!info] A note on development
 > This tool was made with the assistance of AI coding tools
 
 ## License
