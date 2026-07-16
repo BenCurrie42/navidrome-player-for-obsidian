@@ -4,6 +4,7 @@
   "version": "0.1.3",
   "minAppVersion": "1.4.0",
   "description": "Dock a music player in the sidebar that streams your Navidrome (Subsonic) library at full quality without leaving your vault.",
-  "author": "Ben",
+  "author": "Ben Currie",
+  "authorUrl": "https://github.com/BenCurrie42",
   "isDesktopOnly": true
 }

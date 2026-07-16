@@ -37,6 +37,13 @@ palette. It docks in the right sidebar.
 
 > This tool was made with the assistance of AI coding tools
 
+## Network use
+
+This plugin only connects to the Navidrome/Subsonic server you configure in settings — to
+authenticate, browse your library, and stream audio — and opens short-lived connections to your
+server's saved radio stream URLs to read "now playing" metadata. It sends no data to any third party
+and includes no telemetry; your credentials are stored locally and only sent to your server.
+
 ## License
 
 MIT
