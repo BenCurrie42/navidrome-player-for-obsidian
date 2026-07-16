@@ -1,6 +1,6 @@
 # Navidrome Player for Obsidian
 
-![Navidrome Player docked in the Obsidian sidebar](assets/screenshot.png)
+![Navidrome Player docked in the Obsidian sidebar](assets/demoScreenshot.png)
 
 I spend hours in Obsidian and got tired of leaving my vault to skip a track on my
 [Navidrome](https://www.navidrome.org/) server. So I built a little player that lives in the
