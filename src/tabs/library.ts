@@ -5,11 +5,23 @@ import { Album } from "../types";
 
 type SubviewId = "albums" | "artists" | "playlists" | "radio";
 
+/** Sub-tab bar width below which the button row collapses into a dropdown. */
+const SUBSEG_COLLAPSE_BREAKPOINT = 220;
+
+const SUBVIEWS: [SubviewId, string][] = [
+	["albums", "Albums"],
+	["artists", "Artists"],
+	["playlists", "Playlists"],
+	["radio", "Radio"],
+];
+
 /** Library tab: browse albums, artists, and playlists; click to play. */
 export class LibraryTab {
 	private subview: SubviewId = "albums";
 	private content!: HTMLElement;
 	private segButtons: Record<SubviewId, HTMLButtonElement> = {} as never;
+	private subSelect!: HTMLSelectElement;
+	private subsegResizeObs?: ResizeObserver;
 	private loaded: Record<SubviewId, boolean> = {
 		albums: false,
 		artists: false,
@@ -36,10 +48,19 @@ export class LibraryTab {
 			b.onclick = () => this.showSubview(id);
 			this.segButtons[id] = b;
 		};
-		mk("albums", "Albums");
-		mk("artists", "Artists");
-		mk("playlists", "Playlists");
-		mk("radio", "Radio");
+		for (const [id, label] of SUBVIEWS) mk(id, label);
+
+		// Collapsed-width dropdown — created once, shown/hidden via `is-collapsed`
+		// on the sub-tab bar (CSS handles the swap, matching the top tab bar).
+		this.subSelect = seg.createEl("select", {
+			cls: "dropdown navidrome-subseg-select",
+		});
+		this.subSelect.setAttr("aria-label", "Select library section");
+		for (const [id, label] of SUBVIEWS) {
+			this.subSelect.createEl("option", { value: id, text: label });
+		}
+		this.subSelect.onchange = () =>
+			this.showSubview(this.subSelect.value as SubviewId);
 
 		const refresh = seg.createEl("button", { cls: "navidrome-subseg-btn navidrome-refresh" });
 		setIcon(refresh, "refresh-cw");
@@ -48,6 +69,13 @@ export class LibraryTab {
 			this.loaded[this.subview] = false;
 			this.showSubview(this.subview);
 		};
+
+		this.subsegResizeObs = new ResizeObserver(() => {
+			const width = seg.clientWidth;
+			if (width === 0) return; // bar is hidden (e.g. Library tab not active)
+			seg.toggleClass("is-collapsed", width < SUBSEG_COLLAPSE_BREAKPOINT);
+		});
+		this.subsegResizeObs.observe(seg);
 
 		this.content = this.root.createDiv({ cls: "navidrome-library-content" });
 		this.showSubview("albums");
@@ -58,11 +86,17 @@ export class LibraryTab {
 		if (!this.loaded[this.subview]) this.showSubview(this.subview);
 	}
 
+	/** Release the resize observer when the view closes. */
+	destroy() {
+		this.subsegResizeObs?.disconnect();
+	}
+
 	private showSubview(id: SubviewId) {
 		this.subview = id;
 		for (const key of Object.keys(this.segButtons) as SubviewId[]) {
 			this.segButtons[key].toggleClass("is-active", key === id);
 		}
+		this.subSelect.value = id;
 		if (id === "albums") void this.loadAlbums();
 		else if (id === "artists") void this.loadArtists();
 		else if (id === "playlists") void this.loadPlaylists();

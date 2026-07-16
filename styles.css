@@ -438,6 +438,19 @@
 	align-items: center;
 }
 
+.navidrome-subseg-select {
+	display: none;
+	flex: 1;
+}
+
+.navidrome-subseg.is-collapsed .navidrome-subseg-btn:not(.navidrome-refresh) {
+	display: none;
+}
+
+.navidrome-subseg.is-collapsed .navidrome-subseg-select {
+	display: block;
+}
+
 .navidrome-album-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));

@@ -235,6 +235,7 @@ export class NavidromeView extends ItemView {
     // pollers/animations and change subscriptions must be released.
     this.nowPlayingTab?.destroy();
     this.queueTab?.destroy();
+    this.libraryTab?.destroy();
     this.tabbarResizeObs?.disconnect();
   }
 }
