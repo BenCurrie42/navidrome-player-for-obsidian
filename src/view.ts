@@ -156,7 +156,7 @@ export class NavidromeView extends ItemView {
     });
     setIcon(this.searchClearBtn, "x");
     this.searchClearBtn.setAttr("aria-label", "Clear search");
-    this.searchClearBtn.style.display = "none";
+    this.searchClearBtn.hide();
 
     this.searchInput.addEventListener("input", () => this.onSearchInput());
     this.searchInput.addEventListener("keydown", (e) => {
@@ -170,7 +170,7 @@ export class NavidromeView extends ItemView {
 
   private onSearchInput() {
     const value = this.searchInput.value;
-    this.searchClearBtn.style.display = value.length > 0 ? "" : "none";
+    this.searchClearBtn.toggle(value.length > 0);
 
     if (value.length === 0) {
       this.exitSearch();
@@ -204,14 +204,14 @@ export class NavidromeView extends ItemView {
       this.searchDebounceTimer = null;
     }
     this.searchInput.value = "";
-    this.searchClearBtn.style.display = "none";
+    this.searchClearBtn.hide();
     this.searchController.clear();
     this.contentEl.removeClass("is-searching");
   }
 
   private switchTab(id: TabId) {
     for (const key of Object.keys(this.bodies) as TabId[]) {
-      this.bodies[key].style.display = key === id ? "" : "none";
+      this.bodies[key].toggle(key === id);
       this.segButtons[key].toggleClass("is-active", key === id);
     }
     if (id === "library") this.libraryTab.onShow();

@@ -77,13 +77,13 @@ export class NowPlayingTab {
 
 		const coverWrap = this.root.createDiv({ cls: "navidrome-cover-wrap" });
 		this.disc = coverWrap.createEl("img", { cls: "navidrome-disc" });
-		this.disc.style.display = "none";
+		this.disc.hide();
 		this.discFallback = coverWrap.createDiv({ cls: "navidrome-disc navidrome-disc-fallback" });
 		setIcon(this.discFallback, "music");
 
 		// Live waveform visualiser, shown in place of the cover for radio.
 		this.waveCanvas = coverWrap.createEl("canvas", { cls: "navidrome-waveform" });
-		this.waveCanvas.style.display = "none";
+		this.waveCanvas.hide();
 
 		// Keep the waveform sharp and full-size as the pane resizes — the rAF
 		// loop only runs while playing, so paused/static frames need a redraw.
@@ -95,7 +95,7 @@ export class NowPlayingTab {
 		const info = this.root.createDiv({ cls: "navidrome-trackinfo" });
 		this.titleEl = info.createDiv({ cls: "navidrome-title", text: "Nothing playing" });
 		this.liveBadge = info.createDiv({ cls: "navidrome-live-badge", text: "LIVE" });
-		this.liveBadge.style.display = "none";
+		this.liveBadge.hide();
 		this.artistEl = info.createDiv({ cls: "navidrome-artist" });
 		this.albumEl = info.createDiv({ cls: "navidrome-album" });
 
@@ -257,7 +257,7 @@ export class NowPlayingTab {
 
 	private drawWave() {
 		const canvas = this.waveCanvas;
-		if (canvas.style.display === "none") return;
+		if (!canvas.isShown()) return;
 		const dpr = window.devicePixelRatio || 1;
 		const w = canvas.clientWidth || 300;
 		const h = canvas.clientHeight || 160;
@@ -336,32 +336,32 @@ export class NowPlayingTab {
 
 		const client = this.getClient();
 		if (showWave) {
-			this.disc.style.display = "none";
-			this.discFallback.style.display = "none";
-			this.waveCanvas.style.display = "";
+			this.disc.hide();
+			this.discFallback.hide();
+			this.waveCanvas.show();
 			this.updateWave();
 		} else {
-			this.waveCanvas.style.display = "none";
+			this.waveCanvas.hide();
 			this.stopWave();
 			// Cover art.
 			if (track?.coverArt && client) {
 				this.disc.src = client.coverArtUrl(track.coverArt);
-				this.disc.style.display = "";
-				this.discFallback.style.display = "none";
+				this.disc.show();
+				this.discFallback.hide();
 			} else {
-				this.disc.style.display = "none";
-				this.discFallback.style.display = "";
+				this.disc.hide();
+				this.discFallback.show();
 			}
 			this.updateSpin();
 		}
 
 		// Seek bar: hidden for radio (no meaningful duration).
-		this.seekRow.style.display = isRadio ? "none" : "";
+		this.seekRow.toggle(!isRadio);
 
 		// Metadata. For radio the station name is the title and the detected
 		// "now playing" song (best effort) takes the artist line.
 		this.titleEl.setText(track?.title ?? "Nothing playing");
-		this.liveBadge.style.display = isRadio ? "" : "none";
+		this.liveBadge.toggle(isRadio);
 		if (isRadio) {
 			this.artistEl.setText(this.radioNowPlaying ?? "");
 			this.albumEl.setText("");
@@ -371,10 +371,10 @@ export class NowPlayingTab {
 		}
 
 		// Prev/next, shuffle, and vibes are all queue concepts — hidden for radio.
-		this.prevBtn.style.display = isRadio ? "none" : "";
-		this.nextBtn.style.display = isRadio ? "none" : "";
-		this.shuffleBtn.style.display = isRadio ? "none" : "";
-		this.randomBtn.style.display = isRadio ? "none" : "";
+		this.prevBtn.toggle(!isRadio);
+		this.nextBtn.toggle(!isRadio);
+		this.shuffleBtn.toggle(!isRadio);
+		this.randomBtn.toggle(!isRadio);
 
 		// Play button glyph.
 		setIcon(this.playBtn, this.player.isPlaying ? "pause" : "play");
