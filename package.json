@@ -1,6 +1,6 @@
 {
   "name": "navidrome-player",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Dock a Navidrome (Subsonic) music player in the Obsidian sidebar.",
   "main": "main.js",
   "scripts": {

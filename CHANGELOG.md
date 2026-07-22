@@ -4,6 +4,24 @@ All notable changes to Navidrome Player are documented here. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2026-07-22
+
+Maintenance release addressing Obsidian community-review lint findings.
+
+### Changed
+
+- **Auth crypto is now dependency-free and portable** — the Subsonic auth token no longer uses
+  Node's `crypto` module (`createHash` / `randomBytes`), which the community review flagged as
+  unsafe `any`-typed calls and a desktop-only Node dependency. The salt is now derived from the
+  Web Crypto API (`crypto.getRandomValues`) and the token from a small vendored MD5
+  (`src/md5.ts`). The token formula is unchanged (`md5(password + salt)`), so existing servers
+  and credentials keep working.
+
+### New files
+
+- `src/md5.ts` — pure-TypeScript MD5 (RFC 1321) used to derive the Subsonic auth token; verified
+  against Node's `crypto` for ASCII, multi-byte UTF-8, and block-boundary inputs.
+
 ## [0.1.5] - 2026-07-22
 
 Polish release: the Now Playing tab no longer looks stretched in a full-height sidebar.
@@ -134,6 +152,7 @@ Initial release.
 - Persistence of queue, position, mode, volume, and active tab across Obsidian restarts.
 - One-track-ahead prefetch for snappier transitions.
 
+[0.1.6]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.6
 [0.1.5]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.5
 [0.1.4]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.4
 [0.1.3]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.3
