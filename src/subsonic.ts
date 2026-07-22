@@ -1,5 +1,5 @@
 import { requestUrl } from "obsidian";
-import { createHash, randomBytes } from "crypto";
+import { md5 } from "./md5";
 import { Album, Artist, NavidromeSettings, Playlist, RadioStation, Track } from "./types";
 
 const API_VERSION = "1.16.1";
@@ -127,10 +127,10 @@ export class SubsonicClient {
 
 	/** Fresh salted token per call — the raw password never leaves the machine. */
 	private authParams(): Record<string, string> {
-		const salt = randomBytes(8).toString("hex");
-		const token = createHash("md5")
-			.update(this.settings.password + salt)
-			.digest("hex");
+		const bytes = new Uint8Array(8);
+		crypto.getRandomValues(bytes);
+		const salt = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+		const token = md5(this.settings.password + salt);
 		return {
 			u: this.settings.username,
 			t: token,
