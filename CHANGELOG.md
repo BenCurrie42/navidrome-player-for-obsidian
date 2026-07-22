@@ -4,6 +4,45 @@ All notable changes to Navidrome Player are documented here. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2026-07-22
+
+Polish release: the Now Playing tab no longer looks stretched in a full-height sidebar.
+
+### Fixed
+
+- **Stretched Now Playing layout in a tall sidebar** — in a tall/maximized sidebar,
+  `.navidrome-cover-wrap` was the only `flex: 1 1 auto` element, so it absorbed all leftover
+  vertical space: the album art floated at the top, a dead gap sat below it, and the transport
+  controls hugged the bottom edge. The cluster (cover + title + controls) is now vertically
+  centered as one unit and the artwork sizes to its own content
+  (`styles.css`): `.navidrome-nowplaying` gains `justify-content: safe center` (centers when
+  there's room, falls back to top-aligned + scrollable on short panes so the top is never
+  clipped); `.navidrome-cover-wrap` becomes `flex: 0 0 auto`; and `.navidrome-disc` /
+  `.navidrome-waveform` switch to width-driven sizing capped at `min(100%, 360px)` with
+  `aspect-ratio: 1 / 1` — filling the width in a narrow pane, capped on large screens.
+
+## [0.1.4] - 2026-07-16
+
+Compliance release addressing the Obsidian community-plugin review.
+
+### Changed
+
+- **Obsidian API usage** — `minAppVersion` raised to `1.7.2` (the `revealLeaf` API is `@since 1.7.2`)
+  and the `revealLeaf` call is now awaited (`main.ts`).
+- **DOM visibility** — all direct `.style.display` assignments replaced with Obsidian's
+  `hide()` / `show()` / `toggle()` helpers across `src/tabs/nowPlaying.ts`, `src/tabs/library.ts`,
+  and `src/view.ts`.
+- **Command metadata** — the plugin id/name prefix was dropped from the command id and name so
+  Obsidian derives them (`main.ts`).
+- **Build** — `builtin-modules` dependency replaced with Node's `module.builtinModules`
+  (`esbuild.config.mjs`); `package.json` trimmed accordingly.
+- **Author** — set to Ben Currie (`manifest.json`).
+
+### Fixed
+
+- **Radio metadata comment** — documented why the ICY metadata reader must use `fetch` rather than
+  Obsidian's `requestUrl` (`src/radioMetadata.ts`).
+
 ## [0.1.3] - 2026-07-16
 
 Polish release: the tab bar now stays readable in a narrow sidebar.
@@ -95,5 +134,9 @@ Initial release.
 - Persistence of queue, position, mode, volume, and active tab across Obsidian restarts.
 - One-track-ahead prefetch for snappier transitions.
 
+[0.1.5]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.5
+[0.1.4]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.4
+[0.1.3]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.3
+[0.1.2]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/v0.1.2
 [0.1.1]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.1
 [0.1.0]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.0
