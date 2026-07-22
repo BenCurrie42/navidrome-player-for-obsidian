@@ -13,6 +13,7 @@ data.json
 CLAUDE.md
 CLAUDE.local.md
 docs/
+plans/ 
 
 # private / secrets
 .env
