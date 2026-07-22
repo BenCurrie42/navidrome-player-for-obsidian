@@ -12,6 +12,7 @@ data.json
 .mcp.json
 CLAUDE.md
 CLAUDE.local.md
+docs/
 
 # private / secrets
 .env
