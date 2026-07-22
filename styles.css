@@ -160,23 +160,25 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	justify-content: safe center;
 	gap: 10px;
 	width: 100%;
 	max-width: 600px;
 	margin: 0 auto;
 	box-sizing: border-box;
 	/* This element is itself the scrollable tab body (flex:1 in the view's
-	   column), so it already fills the available height — no min-height needed.
-	   The cover/waveform region (flex:1 below) absorbs the slack; scrolling only
-	   kicks in when the pane is too short for the controls' minimum heights. */
+	   column), so it already fills the available height — no min-height
+	   needed. The cluster (cover + title + controls) sizes to its own
+	   content and is vertically centered via justify-content; `safe center`
+	   falls back to top-aligned + scrollable when the cluster is taller than
+	   the pane, so the top is always reachable. */
 }
 
-/* The cover/waveform region absorbs all leftover vertical space; the media
-   inside scales to the largest square that fits, so it tracks pane size. */
+/* The cover/waveform region sizes to its content (the disc/waveform's own
+   width-driven, capped sizing below) instead of absorbing leftover height. */
 .navidrome-cover-wrap {
 	width: 100%;
-	flex: 1 1 auto;
-	min-height: 120px;
+	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -190,10 +192,9 @@
 
 .navidrome-disc,
 .navidrome-waveform {
-	height: 100%;
-	width: auto;
-	max-width: 100%;
-	max-height: 100%;
+	width: 100%;
+	max-width: min(100%, 360px);
+	height: auto;
 	aspect-ratio: 1 / 1;
 }
 
