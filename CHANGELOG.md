@@ -4,6 +4,30 @@ All notable changes to Navidrome Player are documented here. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2026-07-23
+
+Bug-fix release: the random (vibes) button now actually plays random music (#8).
+
+### Fixed
+
+- **Random (vibes) mode did nothing** (#8) — enabling random mode left playback in its existing
+  sequential order and never pulled anything from the library. The control is now wired to a real
+  action: pressing the dice clears the queue, fetches a fresh batch of random songs from the whole
+  library (`getRandomSongs`), and starts playing immediately, then keeps the queue topped up as it
+  drains (`maybeRefill`).
+
+### Changed
+
+- **Vibes is a one-shot dice button, not a toggle** — instead of flipping a persistent
+  normal/random mode, the dice is now a re-roll action (`Player.startVibes`): each press clears and
+  reseeds the queue with a fresh random batch. Random mode still auto-refills endlessly as the
+  queue drains, and choosing a specific album/playlist/search result (`loadQueue`) now resets the
+  player to normal mode so vibes no longer hijacks a deliberately chosen queue.
+- **Random pulls dedupe against the current queue** — `getRandomSongs` results are filtered against
+  the IDs already queued (`dedupAgainstQueue`) so refills never stack duplicates.
+- **Dice-roll tumble animation** — the button tumbles when pressed (`styles.css`,
+  `navidrome-dice-roll` keyframes).
+
 ## [0.1.6] - 2026-07-22
 
 Maintenance release addressing Obsidian community-review lint findings.
@@ -152,6 +176,7 @@ Initial release.
 - Persistence of queue, position, mode, volume, and active tab across Obsidian restarts.
 - One-track-ahead prefetch for snappier transitions.
 
+[0.1.7]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.7
 [0.1.6]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.6
 [0.1.5]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.5
 [0.1.4]: https://github.com/BenCurrie42/navidrome-player-for-obsidian/releases/tag/0.1.4
