@@ -200,10 +200,53 @@ export class Player {
 	// --- modes -------------------------------------------------------------
 
 	setMode(mode: PlaybackMode) {
+		const wasRandom = this.mode === "random";
 		this.mode = mode;
 		this.emit();
 		this.persist();
-		if (mode === "random") void this.maybeRefill();
+		// Seed a random tail (or a fresh random queue) the moment vibes is
+		// switched on, rather than waiting for the queue to drain into
+		// maybeRefill's threshold. Only fires on the off->on transition.
+		if (mode === "random" && !wasRandom) void this.seedRandom();
+	}
+
+	/** IDs already present in the queue, so random pulls never stack duplicates. */
+	private dedupAgainstQueue(songs: Track[]): Track[] {
+		const existingIds = new Set(this.queue.map((t) => t.id));
+		return songs.filter((t) => !existingIds.has(t.id));
+	}
+
+	/**
+	 * Fired once when vibes is switched on. With nothing playing, fetches a
+	 * random batch and starts playing it immediately. With a track already
+	 * current, appends one dedup'd random batch to the end of the queue,
+	 * leaving `index`/current playback/existing order untouched — maybeRefill
+	 * takes over topping it up from there. Shares the `refilling` guard with
+	 * maybeRefill so a rapid toggle or a simultaneous drain can't overlap.
+	 */
+	private async seedRandom() {
+		if (this.refilling) return;
+		// Vibes never seeds while a radio station is current.
+		if (this.current?.isRadio) return;
+		const client = this.getClient();
+		if (!client) return;
+		this.refilling = true;
+		try {
+			const songs = await client.getRandomSongs(REFILL_SIZE);
+			const fresh = this.dedupAgainstQueue(songs);
+			if (!fresh.length) return;
+			if (!this.current) {
+				this.loadQueue(fresh, 0, true);
+			} else {
+				this.queue.push(...fresh);
+				this.emit();
+				this.persist();
+			}
+		} catch (e) {
+			this.onError(`Could not fetch random songs: ${(e as Error).message}`);
+		} finally {
+			this.refilling = false;
+		}
 	}
 
 	/** Shuffle the queue, keeping the current track playing at the front. */
@@ -237,6 +280,8 @@ export class Player {
 	 */
 	private async maybeRefill(force = false) {
 		if (this.mode !== "random" || this.refilling) return;
+		// Vibes never refills while a radio station is current.
+		if (this.current?.isRadio) return;
 		const remaining = this.queue.length - this.index - 1;
 		if (remaining >= REFILL_THRESHOLD && !force) return;
 
@@ -245,9 +290,10 @@ export class Player {
 		this.refilling = true;
 		try {
 			const songs = await client.getRandomSongs(REFILL_SIZE);
-			if (songs.length) {
+			const fresh = this.dedupAgainstQueue(songs);
+			if (fresh.length) {
 				const wasAtEnd = this.index >= this.queue.length - 1;
-				this.queue.push(...songs);
+				this.queue.push(...fresh);
 				if (force && wasAtEnd) {
 					this.index++;
 					this.playCurrent(true);

@@ -165,6 +165,20 @@ export class NowPlayingTab {
 		this.randomBtn.setAttr("aria-label", "Random (vibes) mode");
 		this.randomBtn.onclick = () => {
 			this.player.setMode(this.player.mode === "random" ? "normal" : "random");
+
+			// Dice-roll tumble — remove first to re-trigger on rapid clicks.
+			this.randomBtn.removeClass("is-rolling");
+			void this.randomBtn.offsetWidth; // force reflow
+			this.randomBtn.addClass("is-rolling");
+			const onEnd = () => {
+				this.randomBtn.removeClass("is-rolling");
+				this.randomBtn.removeEventListener("animationend", onEnd);
+			};
+			this.randomBtn.addEventListener("animationend", onEnd);
+			window.setTimeout(() => {
+				this.randomBtn.removeClass("is-rolling");
+				this.randomBtn.removeEventListener("animationend", onEnd);
+			}, 700);
 		};
 
 		const volWrap = controls.createDiv({ cls: "navidrome-volwrap" });
