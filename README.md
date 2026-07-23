@@ -4,9 +4,11 @@
 
 I spend hours in Obsidian and got tired of leaving my vault to skip a track on my
 [Navidrome](https://www.navidrome.org/) server. So I built a little player that lives in the
-sidebar, plays my library at full quality, and **spins a record while it goes**.
+sidebar, plays my library at full quality, and **spins a record while it goes**. 
 
-> **Desktop only** for now — mobile is on the list once the audio path is sorted.
+[Find it here](https://community.obsidian.md/plugins/navidrome-player)
+
+> **Desktop only** for now, mobile is on the list once the audio path is sorted.
 
 ## What it does
 
@@ -14,7 +16,7 @@ sidebar, plays my library at full quality, and **spins a record while it goes**.
 - **Browse your library** — albums grid, artists with expandable albums, playlists
 - **Search everything** — one bar up top searches artists, albums, and songs across your library
 - **Internet radio** — the stations saved on your server show up under Radio and stream live, with best-effort now-playing info
-- **Shuffle & vibes mode** — shuffle the queue, or let it pull random songs from your whole library
+- **Shuffle & the dice** — shuffle the current queue, or roll the dice to clear it and start an endless random mix pulled from your whole library. Roll again any time to re-draw a fresh queue; the mix keeps topping itself up until you pick something specific.
 - **Two-minute setup** — server, username, password in settings, hit Test Connection, done
 
 ## Installation
@@ -56,7 +58,7 @@ and includes no telemetry; your credentials are stored locally and only sent to 
 
 ## Credits
 
-Built with the assistance of AI coding tools.
+Built with the assistance of AI coding tools. Mostly documentation and UI/UX work using Claude opus 4.8
 
 ## License
 

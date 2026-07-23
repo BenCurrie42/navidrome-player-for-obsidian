@@ -84,6 +84,8 @@ export class Player {
 	/** Replace the queue and start playing at `startIndex`. */
 	loadQueue(tracks: Track[], startIndex = 0, autoplay = true) {
 		if (tracks.length === 0) return;
+		// Explicitly choosing music exits vibes; the vibes button re-enters it.
+		this.mode = "normal";
 		this.queue = tracks.slice();
 		this.index = Math.min(Math.max(startIndex, 0), this.queue.length - 1);
 		this.playCurrent(autoplay);
@@ -199,54 +201,40 @@ export class Player {
 
 	// --- modes -------------------------------------------------------------
 
-	setMode(mode: PlaybackMode) {
-		const wasRandom = this.mode === "random";
-		this.mode = mode;
-		this.emit();
-		this.persist();
-		// Seed a random tail (or a fresh random queue) the moment vibes is
-		// switched on, rather than waiting for the queue to drain into
-		// maybeRefill's threshold. Only fires on the off->on transition.
-		if (mode === "random" && !wasRandom) void this.seedRandom();
+	/**
+	 * The vibes button. A one-shot action (not a toggle): clears the queue,
+	 * enters random mode, and starts a fresh batch of random songs playing
+	 * immediately. Pressing it again re-rolls the whole queue. maybeRefill then
+	 * keeps the queue topped up from the library as it drains, so vibes plays
+	 * endlessly until the user picks something specific (which exits the mode
+	 * via loadQueue). The `refilling` guard blocks overlap with a drain refill.
+	 */
+	async startVibes() {
+		if (this.refilling) return;
+		const client = this.getClient();
+		if (!client) return;
+		this.refilling = true;
+		try {
+			const songs = await client.getRandomSongs(REFILL_SIZE);
+			if (!songs.length) {
+				this.onError("Vibes found no random songs to play.");
+				return;
+			}
+			this.queue = songs.slice();
+			this.index = 0;
+			this.mode = "random";
+			this.playCurrent(true);
+		} catch (e) {
+			this.onError(`Could not fetch random songs: ${(e as Error).message}`);
+		} finally {
+			this.refilling = false;
+		}
 	}
 
 	/** IDs already present in the queue, so random pulls never stack duplicates. */
 	private dedupAgainstQueue(songs: Track[]): Track[] {
 		const existingIds = new Set(this.queue.map((t) => t.id));
 		return songs.filter((t) => !existingIds.has(t.id));
-	}
-
-	/**
-	 * Fired once when vibes is switched on. With nothing playing, fetches a
-	 * random batch and starts playing it immediately. With a track already
-	 * current, appends one dedup'd random batch to the end of the queue,
-	 * leaving `index`/current playback/existing order untouched — maybeRefill
-	 * takes over topping it up from there. Shares the `refilling` guard with
-	 * maybeRefill so a rapid toggle or a simultaneous drain can't overlap.
-	 */
-	private async seedRandom() {
-		if (this.refilling) return;
-		// Vibes never seeds while a radio station is current.
-		if (this.current?.isRadio) return;
-		const client = this.getClient();
-		if (!client) return;
-		this.refilling = true;
-		try {
-			const songs = await client.getRandomSongs(REFILL_SIZE);
-			const fresh = this.dedupAgainstQueue(songs);
-			if (!fresh.length) return;
-			if (!this.current) {
-				this.loadQueue(fresh, 0, true);
-			} else {
-				this.queue.push(...fresh);
-				this.emit();
-				this.persist();
-			}
-		} catch (e) {
-			this.onError(`Could not fetch random songs: ${(e as Error).message}`);
-		} finally {
-			this.refilling = false;
-		}
 	}
 
 	/** Shuffle the queue, keeping the current track playing at the front. */

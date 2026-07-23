@@ -162,9 +162,9 @@ export class NowPlayingTab {
 
 		this.randomBtn = controls.createEl("button", { cls: "navidrome-btn navidrome-btn-sm" });
 		setIcon(this.randomBtn, "dice-5");
-		this.randomBtn.setAttr("aria-label", "Random (vibes) mode");
+		this.randomBtn.setAttr("aria-label", "Play random songs (vibes)");
 		this.randomBtn.onclick = () => {
-			this.player.setMode(this.player.mode === "random" ? "normal" : "random");
+			void this.player.startVibes();
 
 			// Dice-roll tumble — remove first to re-trigger on rapid clicks.
 			this.randomBtn.removeClass("is-rolling");
