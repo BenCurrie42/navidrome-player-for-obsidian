@@ -333,6 +333,17 @@
 	animation: navidrome-shuffle 0.5s ease-in-out;
 }
 
+@keyframes navidrome-dice-roll {
+	0%   { transform: rotate(0deg)    scale(1); }
+	25%  { transform: rotate(-20deg)  scale(1.2); }
+	60%  { transform: rotate(160deg)  scale(0.85); }
+	100% { transform: rotate(360deg)  scale(1); }
+}
+
+.navidrome-btn.is-rolling {
+	animation: navidrome-dice-roll 0.5s ease-in-out;
+}
+
 .navidrome-volwrap {
 	display: flex;
 	align-items: center;
