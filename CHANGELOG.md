@@ -4,6 +4,24 @@ All notable changes to Navidrome Player are documented here. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - 2026-07-28
+
+Fixes a community-review error introduced by 0.1.9's declarative settings.
+
+### Fixed
+
+- **Called 1.13.0-only APIs while `minAppVersion` is 1.7.2**
+  (`obsidianmd/no-unsupported-api`) — the `getControlValue()` / `setControlValue()`
+  overrides added in 0.1.9 delegated unknown keys to `super.getControlValue()` and
+  `super.setControlValue()`. Those base-class methods only exist on Obsidian 1.13.0+, so on
+  an older version the fallback branch would have thrown a `TypeError` instead of
+  delegating. Both branches were unreachable in practice — the only keys ever passed are
+  the three control keys declared in `getSettingDefinitions()` — so they now return
+  `undefined` / no-op rather than delegating upward, with the reason documented in place.
+- **`SettingDefinitionItem` is now a type-only import** — it's a 1.13.0+ declaration, and a
+  value import left it in the bundle's `require("obsidian")` destructure. Erased at build,
+  so nothing new is referenced at runtime on the older versions `minAppVersion` allows.
+
 ## [0.1.9] - 2026-07-28
 
 Community-review follow-up. Same features as 0.1.8, which was superseded because its
