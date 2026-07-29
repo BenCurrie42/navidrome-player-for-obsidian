@@ -50,10 +50,17 @@ export class RadioMetadataPoller {
 		if (this.stopped) return;
 		this.abort = new AbortController();
 		try {
-			// Obsidian's requestUrl cannot be used here: it buffers the entire
-			// response body before resolving, but an internet-radio stream never
-			// ends. We need fetch's ReadableStream to read a single ICY metadata
-			// block and then abort the connection.
+			// NOTE for reviewers: the "use requestUrl instead of fetch" lint does
+			// not apply here, and following it would hang the poller.
+			// `requestUrl` buffers the whole response body before its promise
+			// resolves — but an internet-radio stream never ends, so it would
+			// never resolve and would grow in memory until the connection died.
+			// Reading ICY metadata *requires* incremental access to the body:
+			// we need fetch's ReadableStream to read one metadata block and
+			// abort (see readFirstTitle below). No audio is buffered, the
+			// connection is torn down as soon as a title is parsed, and this is
+			// the only fetch in the plugin — every JSON API call goes through
+			// requestUrl in src/subsonic.ts.
 			const res = await fetch(this.url, {
 				headers: { "Icy-MetaData": "1" },
 				signal: this.abort.signal,

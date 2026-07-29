@@ -4,6 +4,42 @@ All notable changes to Navidrome Player are documented here. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-07-28
+
+Community-review follow-up. Same features as 0.1.8, which was superseded because its
+GitHub release was published without its build assets attached.
+
+### Added
+
+- **Declarative settings (Obsidian 1.13.0+)** — `NavidromeSettingTab` now implements
+  `getSettingDefinitions()`, so every setting is indexed by Obsidian's settings search
+  instead of being invisible to it on 1.13.0 and later. Server URL, Username, and Cover
+  style are declarative `control` rows backed by `getControlValue()` / `setControlValue()`
+  overrides; Password and Test connection use `render` callbacks, since there's no masked
+  text control and the button needs its own transient "Testing…" state. `display()` is kept
+  as the imperative fallback for Obsidian older than 1.13.0 (`minAppVersion` is 1.7.2) —
+  Obsidian skips it entirely once `getSettingDefinitions()` returns rows, and both paths
+  share the same row builders so they can't drift.
+- **Release workflow** (`.github/workflows/release.yml`) — pushing a bare semver tag builds
+  the plugin and attaches `main.js`, `manifest.json`, and `styles.css` to the GitHub
+  Release. `main.js` is gitignored, so a release missing those assets is uninstallable —
+  which is exactly what happened to 0.1.8. The job also fails the build if the tag and
+  `manifest.json` version disagree.
+
+### Changed
+
+- **Documented why radio metadata uses `fetch`** (`src/radioMetadata.ts`) — the community
+  linter flags the one `fetch` call in the plugin, but `requestUrl` cannot replace it:
+  `requestUrl` buffers the entire response body before resolving, and an internet-radio
+  stream never ends, so it would never resolve. Reading ICY metadata needs incremental
+  `ReadableStream` access to read a single metadata block and abort. Comment expanded to
+  explain this in place. Every JSON API call still goes through `requestUrl`
+  (`src/subsonic.ts`).
+
+### New files
+
+- `.github/workflows/release.yml` — tag-triggered build and GitHub Release publish.
+
 ## [0.1.8] - 2026-07-28
 
 Small quality-of-life release: the album art is now a play/pause button.
