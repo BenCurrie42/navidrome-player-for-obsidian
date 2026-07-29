@@ -4,6 +4,26 @@ All notable changes to Navidrome Player are documented here. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8] - 2026-07-28
+
+Small quality-of-life release: the album art is now a play/pause button.
+
+### Added
+
+- **Click the cover art to toggle play/pause** — the whole cover area
+  (`.navidrome-cover-wrap`) is now clickable and calls `Player.togglePlay()`, matching the
+  transport button. One listener on the wrapper covers all three cover styles — spinning disc,
+  square/fallback disc, and the waveform canvas — plus radio playback.
+- **Keyboard access for the cover control** — the cover wrapper takes `role="button"` and
+  `tabindex="0"`, responds to Enter and Space (with `preventDefault()` so Space doesn't scroll the
+  pane), gets a `:focus-visible` accent outline (`.navidrome-cover-clickable`, `styles.css`), and
+  carries an `aria-label` that stays in sync with playback state ("Play" / "Pause").
+
+### Removed
+
+- `prd.md` — superseded by the per-feature PRDs in `docs/prds/`.
+- `AGENTS.md` — no longer tracked in git (now gitignored, kept local only).
+
 ## [0.1.7] - 2026-07-23
 
 Bug-fix release: the random (vibes) button now actually plays random music (#8).

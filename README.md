@@ -12,7 +12,7 @@ sidebar, plays my library at full quality, and **spins a record while it goes**.
 
 ## What it does
 
-- **A spinning record** — cover art turns like vinyl while it plays, stops when you pause. There's a square mode too. 🤷‍♂️
+- **A spinning record** — cover art turns like vinyl while it plays, stops when you pause. Click the cover to play/pause. There's a square mode too. 🤷‍♂️
 - **Browse your library** — albums grid, artists with expandable albums, playlists
 - **Search everything** — one bar up top searches artists, albums, and songs across your library
 - **Internet radio** — the stations saved on your server show up under Radio and stream live, with best-effort now-playing info
