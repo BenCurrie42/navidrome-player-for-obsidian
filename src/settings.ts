@@ -1,10 +1,7 @@
-import {
-	App,
-	Notice,
-	PluginSettingTab,
-	Setting,
-	SettingDefinitionItem,
-} from "obsidian";
+import { App, Notice, PluginSettingTab, Setting } from "obsidian";
+// Type-only: 1.13.0+ declaration, erased at build so it is never required at
+// runtime on the older Obsidian versions minAppVersion still allows.
+import type { SettingDefinitionItem } from "obsidian";
 import type NavidromePlugin from "../main";
 import { SubsonicClient, SubsonicError } from "./subsonic";
 import type { CoverStyle } from "./types";
@@ -67,7 +64,14 @@ export class NavidromeSettingTab extends PluginSettingTab {
 		];
 	}
 
-	/** Read a declarative control's value out of the plugin's settings. */
+	/**
+	 * Read a declarative control's value out of the plugin's settings.
+	 *
+	 * Deliberately no `super` call in the fallback: `PluginSettingTab`'s own
+	 * `getControlValue` only exists on 1.13.0+, and `minAppVersion` is 1.7.2.
+	 * Nothing reaches the fallback anyway — the only keys ever passed are the
+	 * control keys declared in `getSettingDefinitions()` above.
+	 */
 	getControlValue(key: string): unknown {
 		switch (key) {
 			case "serverUrl":
@@ -76,12 +80,15 @@ export class NavidromeSettingTab extends PluginSettingTab {
 				return this.plugin.settings.username;
 			case "coverStyle":
 				return this.plugin.settings.coverStyle;
-			default:
-				return super.getControlValue(key);
 		}
+		return undefined;
 	}
 
-	/** Persist a declarative control's value, mirroring the imperative handlers. */
+	/**
+	 * Persist a declarative control's value, mirroring the imperative handlers.
+	 * Unknown keys are ignored rather than delegated up — see the note on
+	 * `getControlValue`.
+	 */
 	async setControlValue(key: string, value: unknown): Promise<void> {
 		switch (key) {
 			case "serverUrl":
@@ -94,7 +101,6 @@ export class NavidromeSettingTab extends PluginSettingTab {
 				this.plugin.settings.coverStyle = value as CoverStyle;
 				break;
 			default:
-				await super.setControlValue(key, value);
 				return;
 		}
 		await this.plugin.saveSettings();
