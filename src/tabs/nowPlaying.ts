@@ -13,6 +13,7 @@ function fmtTime(seconds: number): string {
 
 /** Now Playing tab: spinning cover, transport, seek/volume, and the queue. */
 export class NowPlayingTab {
+	private coverWrap!: HTMLElement;
 	private disc!: HTMLImageElement;
 	private discFallback!: HTMLElement;
 	private waveCanvas!: HTMLCanvasElement;
@@ -76,6 +77,7 @@ export class NowPlayingTab {
 		this.root.addClass("navidrome-nowplaying");
 
 		const coverWrap = this.root.createDiv({ cls: "navidrome-cover-wrap" });
+		this.coverWrap = coverWrap;
 		this.disc = coverWrap.createEl("img", { cls: "navidrome-disc" });
 		this.disc.hide();
 		this.discFallback = coverWrap.createDiv({ cls: "navidrome-disc navidrome-disc-fallback" });
@@ -84,6 +86,23 @@ export class NowPlayingTab {
 		// Live waveform visualiser, shown in place of the cover for radio.
 		this.waveCanvas = coverWrap.createEl("canvas", { cls: "navidrome-waveform" });
 		this.waveCanvas.hide();
+
+		// Clicking (or Enter/Space while focused) anywhere in the cover area
+		// toggles play/pause, matching the transport button — the disc, its
+		// fallback, and the waveform all live inside this single wrapper, so
+		// one listener here covers all three cover styles plus radio.
+		coverWrap.addClass("navidrome-cover-clickable");
+		coverWrap.setAttr("tabindex", "0");
+		coverWrap.setAttr("role", "button");
+		coverWrap.addEventListener("click", () => this.player.togglePlay());
+		coverWrap.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" || e.key === " ") {
+				// Prevent the browser's default "scroll page" action for Space
+				// on a focused non-form element.
+				e.preventDefault();
+				this.player.togglePlay();
+			}
+		});
 
 		// Keep the waveform sharp and full-size as the pane resizes — the rAF
 		// loop only runs while playing, so paused/static frames need a redraw.
@@ -390,8 +409,9 @@ export class NowPlayingTab {
 		this.shuffleBtn.toggle(!isRadio);
 		this.randomBtn.toggle(!isRadio);
 
-		// Play button glyph.
+		// Play button glyph, and the cover area's accessible name kept in sync.
 		setIcon(this.playBtn, this.player.isPlaying ? "pause" : "play");
+		this.coverWrap.setAttr("aria-label", this.player.isPlaying ? "Pause" : "Play");
 
 		// Mode button states.
 		this.randomBtn.toggleClass("is-active", this.player.mode === "random");

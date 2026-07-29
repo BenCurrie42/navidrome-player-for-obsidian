@@ -185,6 +185,15 @@
 	padding: 12px 0;
 }
 
+.navidrome-cover-clickable {
+	cursor: pointer;
+}
+
+.navidrome-cover-clickable:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 4px;
+}
+
 @keyframes navidrome-spin {
 	from { transform: rotate(0deg); }
 	to { transform: rotate(360deg); }
